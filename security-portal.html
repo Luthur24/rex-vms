@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Security Portal — REX Insurance VMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FFFFFF; --surface: #F7F8FA; --surface-hover: #F0F2F5; --border: #E4E7EC;
+    --text-primary: #1C2333; --text-secondary: #5B6472; --text-tertiary: #8A93A3;
+    --accent: #0F4C5C; --accent-tint: #E8F1F2; --accent-hover: #0C3E4B;
+    --danger: #B3261E; --danger-bg: #FBEAE9; --success: #1E7B4D; --success-bg: #E7F5EC;
+    --font-display: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: var(--font-body); background: var(--bg); color: var(--text-primary); -webkit-font-smoothing: antialiased; min-height: 100vh; transition: background-color .3s, color .3s; }
+  body.theme-dark { --bg: #0B0D12; --surface: #15171E; --surface-hover: #1C1F28; --border: #262A35; --text-primary: #F2F4F8; --text-secondary: #A6ADBB; --text-tertiary: #6E7684; --accent-tint: #17323A; --success-bg: #123324; }
+
+  /* ===== Top bar ===== */
+  .top-bar { display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; border-bottom: 1px solid var(--border); }
+  .top-left { display: flex; align-items: center; gap: 12px; }
+  .badge-icon { width: 34px; height: 34px; border-radius: 9px; background: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .badge-icon svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .top-left .titles .company { font-family: var(--font-display); font-weight: 800; font-size: 14.5px; }
+  .top-left .titles .portal { font-size: 12.5px; color: var(--text-secondary); }
+  .top-right { display: flex; align-items: center; gap: 14px; }
+  #clock { font-size: 12.5px; color: var(--text-tertiary); font-variant-numeric: tabular-nums; }
+  .user-chip { font-size: 12.5px; color: var(--text-secondary); background: var(--surface); border: 1px solid var(--border); padding: 6px 12px; border-radius: 100px; }
+  .logout-btn { font-size: 12.5px; font-weight: 600; color: var(--danger); background: var(--danger-bg); border: none; padding: 7px 12px; border-radius: 7px; cursor: pointer; }
+  .theme-toggle { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .theme-toggle:hover { background: var(--surface-hover); }
+  .theme-toggle svg { width: 16px; height: 16px; fill: none; stroke: var(--text-primary); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .theme-toggle .icon-moon { display: none; }
+  body.theme-dark .theme-toggle .icon-sun { display: none; }
+  body.theme-dark .theme-toggle .icon-moon { display: block; }
+
+  /* ===== Connection banner ===== */
+  .conn-banner { display: none; background: var(--accent); color: #fff; font-size: 12.5px; font-weight: 600; text-align: center; padding: 8px; }
+  .conn-banner.show { display: block; }
+
+  /* ===== Layout ===== */
+  .app-shell { display: none; }
+  .app-shell.ready { display: block; }
+  .layout { max-width: 1180px; margin: 0 auto; padding: 28px 32px 60px; }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px 22px 8px; }
+  .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+  .panel-header h2 { font-family: var(--font-display); font-size: 16px; font-weight: 700; }
+  .panel-header .sub { font-size: 12.5px; color: var(--text-tertiary); }
+  .header-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .search-row { position: relative; width: 260px; max-width: 100%; }
+  .search-row svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; stroke: var(--text-tertiary); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .search-row input { width: 100%; padding: 9px 12px 9px 33px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text-primary); font-size: 13.5px; outline: none; }
+  .search-row input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-tint); }
+  .count-chip { font-size: 12px; font-weight: 600; color: var(--accent); background: var(--accent-tint); padding: 4px 10px; border-radius: 100px; white-space: nowrap; }
+  .btn-add { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: #fff; background: var(--accent); border: none; padding: 9px 14px; border-radius: 8px; cursor: pointer; white-space: nowrap; }
+  .btn-add:hover { background: var(--accent-hover); }
+  .btn-add svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th { text-align: left; font-size: 11.5px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: var(--text-tertiary); padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  tbody td { padding: 13px 12px; font-size: 13.5px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr.visitor-row { cursor: pointer; }
+  tbody tr.visitor-row:hover { background: var(--surface-hover); }
+  .visitor-name { font-weight: 700; }
+  .visitor-sub { font-size: 11.5px; color: var(--text-tertiary); margin-top: 2px; }
+  .id-tag { display: inline-block; font-size: 11.5px; font-weight: 600; color: var(--text-secondary); background: var(--bg); border: 1px solid var(--border); padding: 3px 8px; border-radius: 6px; }
+  .edit-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 600; color: var(--accent); background: var(--accent-tint); border: none; padding: 7px 12px; border-radius: 7px; cursor: pointer; }
+  .edit-btn:hover { filter: brightness(.96); }
+  body.theme-dark .edit-btn:hover { filter: brightness(1.15); }
+  .edit-btn svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .empty-row td { text-align: center; padding: 48px 20px; color: var(--text-tertiary); font-size: 13.5px; }
+
+  /* ===== Modals (shared pattern) ===== */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(10,12,16,.5); align-items: center; justify-content: center; z-index: 100; padding: 20px; overflow-y: auto; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; width: 100%; max-width: 440px; padding: 24px; margin: auto; }
+  .modal h3 { font-family: var(--font-display); font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .modal .modal-sub { font-size: 12.5px; color: var(--text-tertiary); margin-bottom: 18px; }
+  .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .field label { font-size: 12.5px; font-weight: 600; color: var(--text-secondary); }
+  .field input, .field select, .field textarea { font-family: var(--font-body); font-size: 13.5px; padding: 9px 11px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text-primary); outline: none; }
+  .field textarea { resize: vertical; min-height: 60px; }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-tint); }
+  .field input.invalid, .field select.invalid { border-color: var(--danger); box-shadow: 0 0 0 3px var(--danger-bg); }
+  .field .error-text { font-size: 11.5px; color: var(--danger); display: none; margin-top: 2px; }
+  .field.error .error-text { display: block; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .btn-primary { flex: 1; background: var(--accent); color: #fff; border: none; padding: 11px 16px; border-radius: 9px; font-size: 13.5px; font-weight: 700; cursor: pointer; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-primary:disabled { opacity: .6; cursor: default; }
+  .btn-secondary { background: var(--surface); border: 1px solid var(--border); color: var(--text-secondary); padding: 11px 16px; border-radius: 9px; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+  .btn-secondary:hover { background: var(--surface-hover); }
+
+  .appt-toggle { display: flex; gap: 8px; }
+  .appt-toggle button { flex: 1; padding: 9px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); font-size: 13px; font-weight: 600; color: var(--text-secondary); cursor: pointer; }
+  .appt-toggle button.active { background: var(--accent-tint); border-color: var(--accent); color: var(--accent); }
+
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--accent); color: #fff; font-size: 13px; font-weight: 600; padding: 11px 18px; border-radius: 9px; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; display: flex; align-items: center; gap: 8px; z-index: 300; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.error { background: var(--danger); }
+
+  /* ===== Detail / choice / history / log-visit (full page) ===== */
+  .detail-avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--accent-tint); color: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+  .choice-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+  .choice-options { display: flex; flex-direction: column; gap: 10px; }
+  .choice-btn { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 14px 16px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; font-family: var(--font-body); }
+  .choice-btn:hover { background: var(--surface-hover); border-color: var(--accent); }
+  .choice-btn .choice-icon { width: 36px; height: 36px; border-radius: 9px; background: var(--accent-tint); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .choice-btn .choice-icon svg { width: 17px; height: 17px; stroke: var(--accent); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .choice-btn .title { font-weight: 700; font-size: 13.5px; }
+  .choice-btn .sub { font-size: 11.5px; color: var(--text-tertiary); margin-top: 1px; }
+
+  .fullpage { display: none; position: fixed; inset: 0; background: var(--bg); z-index: 80; overflow-y: auto; }
+  .fullpage.show { display: block; }
+  .fullpage-inner { max-width: 1180px; margin: 0 auto; padding: 24px 32px 60px; }
+  .back-btn { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; margin-bottom: 22px; }
+  .back-btn:hover { background: var(--surface-hover); }
+  .back-btn svg { width: 18px; height: 18px; stroke: var(--text-primary); fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .fullpage-header { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+  .fullpage-header .name { font-family: var(--font-display); font-weight: 700; font-size: 17px; }
+  .fullpage-header .meta { font-size: 12.5px; color: var(--text-tertiary); margin-top: 2px; }
+
+  .visit-status-cell { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 100px; display: inline-block; }
+  .visit-status-cell.checked-out { color: var(--success); background: var(--success-bg); }
+  .visit-status-cell.rejected { color: var(--danger); background: var(--danger-bg); }
+  .visit-status-cell.pending, .visit-status-cell.hold, .visit-status-cell.approved, .visit-status-cell.with-host { color: var(--accent); background: var(--accent-tint); }
+
+  tr.recent-visit-row td { background: var(--accent-tint); }
+  .recent-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 700; color: var(--accent); background: var(--bg); border: 1px solid var(--accent); padding: 2px 7px; border-radius: 100px; margin-left: 6px; white-space: nowrap; }
+  .recent-tag .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+
+  /* ===== Login gate ===== */
+  .login-gate { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .login-card { width: 100%; max-width: 380px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 32px 28px; }
+  .login-card .badge-icon { margin: 0 auto 18px; width: 46px; height: 46px; }
+  .login-card .badge-icon svg { width: 24px; height: 24px; }
+  .login-card h1 { font-family: var(--font-display); font-size: 18px; font-weight: 800; text-align: center; margin-bottom: 4px; }
+  .login-card .sub { font-size: 12.5px; color: var(--text-tertiary); text-align: center; margin-bottom: 24px; }
+  .login-error { font-size: 12.5px; color: var(--danger); background: var(--danger-bg); padding: 9px 12px; border-radius: 8px; margin-bottom: 14px; display: none; }
+  .login-error.show { display: block; }
+
+  /* ===== AI guide widget ===== */
+  .guide-fab { position: fixed; bottom: 24px; right: 24px; width: 52px; height: 52px; border-radius: 50%; background: var(--accent); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(0,0,0,.25); z-index: 150; }
+  .guide-fab svg { width: 24px; height: 24px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .guide-panel { display: none; position: fixed; bottom: 88px; right: 24px; width: 340px; max-width: calc(100vw - 32px); max-height: 480px; background: var(--bg); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.2); z-index: 150; flex-direction: column; overflow: hidden; }
+  .guide-panel.show { display: flex; }
+  .guide-head { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .guide-head .t { font-family: var(--font-display); font-weight: 700; font-size: 13.5px; }
+  .guide-head .close-guide { background: none; border: none; color: var(--text-tertiary); cursor: pointer; font-size: 18px; line-height: 1; }
+  .guide-body { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+  .guide-msg { font-size: 13px; line-height: 1.5; padding: 9px 12px; border-radius: 10px; max-width: 88%; }
+  .guide-msg.bot { background: var(--surface); align-self: flex-start; }
+  .guide-msg.user { background: var(--accent); color: #fff; align-self: flex-end; }
+  .guide-quick { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 12px; }
+  .guide-quick button { font-size: 11.5px; font-weight: 600; color: var(--accent); background: var(--accent-tint); border: none; padding: 6px 10px; border-radius: 100px; cursor: pointer; }
+  .guide-input-row { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--border); }
+  .guide-input-row input { flex: 1; font-size: 13px; padding: 9px 11px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text-primary); outline: none; }
+  .guide-input-row button { background: var(--accent); color: #fff; border: none; width: 36px; border-radius: 8px; cursor: pointer; flex-shrink: 0; }
+  .guide-typing { font-size: 12px; color: var(--text-tertiary); font-style: italic; }
+
+  @media (max-width: 720px) {
+    .layout, .fullpage-inner { padding: 20px; }
+    thead th:nth-child(3), tbody td:nth-child(3) { display: none; }
+    .search-row { width: 100%; }
+    .field-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body class="theme-dark">
+
+  <!-- ===================== LOGIN GATE ===================== -->
+  <div class="login-gate" id="loginGate">
+    <div class="login-card">
+      <div class="badge-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 1.5 21 5v6.2c0 6.1-3.8 10.9-9 12.3-5.2-1.4-9-6.2-9-12.3V5l9-3.5z"/><path d="m9.5 12 1.8 1.8 3.2-3.6" stroke-width="2"/></svg>
+      </div>
+      <h1>Security Portal</h1>
+      <div class="sub">REX Insurance · Enter the gate passcode to continue</div>
+
+      <div class="login-error" id="loginError"></div>
+
+      <div class="field">
+        <label>Your name</label>
+        <input type="text" id="loginName" placeholder="e.g. Daniel Okonkwo">
+      </div>
+      <div class="field">
+        <label>Passcode</label>
+        <input type="password" id="loginPasscode" placeholder="Enter passcode">
+      </div>
+      <button class="btn-primary" id="loginBtn" style="width:100%;">Log In</button>
+    </div>
+  </div>
+
+  <!-- ===================== APP SHELL ===================== -->
+  <div class="app-shell" id="appShell">
+    <div class="conn-banner" id="connBanner">Connecting to server — this can take up to a minute on first load...</div>
+
+    <div class="top-bar">
+      <div class="top-left">
+        <div class="badge-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 1.5 21 5v6.2c0 6.1-3.8 10.9-9 12.3-5.2-1.4-9-6.2-9-12.3V5l9-3.5z"/><path d="m9.5 12 1.8 1.8 3.2-3.6" stroke-width="2"/></svg>
+        </div>
+        <div class="titles">
+          <div class="company">REX Insurance</div>
+          <div class="portal">Security Portal</div>
+        </div>
+      </div>
+      <div class="top-right">
+        <span class="user-chip" id="userChip"></span>
+        <div id="clock"></div>
+        <button class="logout-btn" id="logoutBtn">Log Out</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <div class="panel">
+        <div class="panel-header">
+          <div><h2>Registered Visitors</h2><span class="sub">Master record of all visitors previously registered in the system</span></div>
+          <div class="header-actions">
+            <span class="count-chip" id="countChip">0 records</span>
+            <div class="search-row">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="text" id="searchInput" placeholder="Search by name, phone, or ID number...">
+            </div>
+            <button class="btn-add" id="registerBtn">
+              <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+              Register Visitor
+            </button>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>Full Name</th><th>Phone Number</th><th>ID Type</th><th>ID Number</th><th>Registered</th><th></th></tr></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Register / Edit Visitor Modal ===== -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <h3 id="editModalTitle">Edit Visitor Information</h3>
+      <div class="modal-sub" id="editModalSub">Update the record for this visitor.</div>
+      <div class="field"><label>Full name</label><input type="text" id="editName"><span class="error-text">Name is required.</span></div>
+      <div class="field"><label>Phone number</label><input type="tel" id="editPhone" maxlength="11"><span class="error-text">Enter a valid 11-digit phone number.</span></div>
+      <div class="field"><label>ID type</label>
+        <select id="editIdType">
+          <option>National ID (NIN)</option><option>Driver's License</option><option>International Passport</option><option>Voter's Card</option>
+        </select>
+      </div>
+      <div class="field"><label>ID number</label><input type="text" id="editIdNumber"><span class="error-text">ID number is required.</span></div>
+      <div class="modal-actions">
+        <button class="btn-secondary" id="cancelEdit">Cancel</button>
+        <button class="btn-primary" id="saveEdit">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Visitor Choice Card ===== -->
+  <div class="modal-overlay" id="choiceOverlay">
+    <div class="modal">
+      <div class="choice-header">
+        <div class="detail-avatar" id="choiceAvatar"></div>
+        <div><div style="font-family:var(--font-display);font-weight:700;font-size:16px;" id="choiceName"></div>
+        <div style="font-size:12px;color:var(--text-tertiary);margin-top:2px;" id="choiceMeta"></div></div>
+      </div>
+      <div class="choice-options">
+        <button class="choice-btn" id="choiceAddVisit">
+          <span class="choice-icon"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>
+          <span><div class="title" id="choiceAddVisitLabel">Add New Visit</div><div class="sub">Log a new visit for this person</div></span>
+        </button>
+        <button class="choice-btn" id="choiceViewHistory">
+          <span class="choice-icon"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5M12 7v5l4 2"/></svg></span>
+          <span><div class="title" id="choiceViewHistoryLabel">View All Visits</div><div class="sub">See this person's full visit history</div></span>
+        </button>
+      </div>
+      <div class="modal-actions"><button class="btn-secondary" id="closeChoice" style="flex:1;">Cancel</button></div>
+    </div>
+  </div>
+
+  <!-- ===== Log New Visit (full page) ===== -->
+  <div class="fullpage" id="pageLogVisit">
+    <div class="fullpage-inner">
+      <button class="back-btn" id="backFromLogVisit"><svg viewBox="0 0 24 24"><path d="M19 12H5M11 18l-6-6 6-6"/></svg></button>
+      <div class="fullpage-header">
+        <div class="detail-avatar" id="logVisitAvatar"></div>
+        <div><div class="name" id="logVisitName"></div><div class="meta" id="logVisitMeta"></div></div>
+      </div>
+      <div class="panel" style="padding-top:22px;">
+        <div class="panel-header"><div><h2>Log a New Visit</h2><span class="sub">Check-in time is recorded automatically on submit</span></div></div>
+        <div class="field">
+          <label>Appointment status</label>
+          <div class="appt-toggle">
+            <button type="button" id="btnWalkin" class="active">Walk-in</button>
+            <button type="button" id="btnScheduled">Scheduled</button>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Department visiting</label>
+            <select id="visitDepartment"><option>Claims</option><option>Underwriting</option><option>Customer Relations</option><option>Finance</option><option>IT</option><option>Executive Office</option></select>
+          </div>
+          <div class="field"><label>Staff / host</label><input type="text" id="visitHost" placeholder="Name of staff being visited"><span class="error-text">Host name is required.</span></div>
+        </div>
+        <div class="field"><label>Purpose of visit</label><textarea id="visitPurpose" placeholder="Brief reason for the visit"></textarea><span class="error-text">Purpose is required.</span></div>
+        <button class="btn-primary" id="saveVisit" style="width:100%;margin-bottom:22px;">Log Visit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Visit History (full page) ===== -->
+  <div class="fullpage" id="pageVisitHistory">
+    <div class="fullpage-inner">
+      <button class="back-btn" id="backFromHistory"><svg viewBox="0 0 24 24"><path d="M19 12H5M11 18l-6-6 6-6"/></svg></button>
+      <div class="fullpage-header">
+        <div class="detail-avatar" id="historyAvatar"></div>
+        <div><div class="name" id="historyName"></div><div class="meta" id="historyMeta"></div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><div><h2>Visit History</h2><span class="sub">All logged visits for this person</span></div><span class="count-chip" id="historyCountChip">0 visits</span></div>
+        <table>
+          <thead><tr><th>Department</th><th>Purpose</th><th>Host</th><th>Check-in</th><th>Check-out</th><th>Status</th></tr></thead>
+          <tbody id="historyTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== AI Guide ===== -->
+  <button class="guide-fab" id="guideFab" aria-label="Open help guide">
+    <svg viewBox="0 0 24 24"><path d="M12 18h.01M9.09 9a3 3 0 1 1 5.83 1c0 2-3 2-3 4"/><circle cx="12" cy="12" r="9"/></svg>
+  </button>
+  <div class="guide-panel" id="guidePanel">
+    <div class="guide-head"><span class="t">Security Portal Guide</span><button class="close-guide" id="closeGuide">&times;</button></div>
+    <div class="guide-body" id="guideBody">
+      <div class="guide-msg bot">Hi! Ask me anything about using the Security Portal — how to register a visitor, log a visit, or find someone's record.</div>
+    </div>
+    <div class="guide-quick" id="guideQuick">
+      <button data-q="How do I register a new visitor?">Register a visitor</button>
+      <button data-q="How do I log a visit for someone already registered?">Log a visit</button>
+      <button data-q="How do I search for a visitor?">Search visitors</button>
+    </div>
+    <div class="guide-input-row">
+      <input type="text" id="guideInput" placeholder="Ask a question...">
+      <button id="guideSend"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg><span id="toastText"></span></div>
+
+<script>
+  // ============================================================
+  // CONFIG — replace with your real Render backend URL once deployed
+  // ============================================================
+  const API_BASE = "https://your-backend.onrender.com/api";
+  const PORTAL = "security";
+  const TOKEN_KEY = "rex_vms_token_security";
+  const NAME_KEY = "rex_vms_name_security";
+
+  let authToken = localStorage.getItem(TOKEN_KEY);
+  let userName = localStorage.getItem(NAME_KEY);
+
+  // ===== Fetch helper =====
+  async function api(path, options = {}) {
+    const res = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+        ...(options.headers || {})
+      }
+    });
+    if (res.status === 401) {
+      clearSession();
+      showLoginGate();
+      throw new Error("Session expired. Please log in again.");
+    }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "Something went wrong.");
+    return data;
+  }
+
+  function clearSession() {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(NAME_KEY);
+    authToken = null; userName = null;
+  }
+
+  function showLoginGate() {
+    document.getElementById("loginGate").style.display = "flex";
+    document.getElementById("appShell").classList.remove("ready");
+  }
+  function showAppShell() {
+    document.getElementById("loginGate").style.display = "none";
+    document.getElementById("appShell").classList.add("ready");
+    document.getElementById("userChip").textContent = userName;
+    initPortal();
+  }
+
+  // ===== Warm-up ping (Render free-tier cold start) =====
+  async function warmUp() {
+    const banner = document.getElementById("connBanner");
+    banner.classList.add("show");
+    try {
+      await fetch(`${API_BASE}/ping`);
+    } catch (e) { /* first ping may fail while server wakes up — that's expected */ }
+    banner.classList.remove("show");
+  }
+
+  // ===== Boot sequence =====
+  (async function boot() {
+    warmUp();
+    if (authToken) {
+      try {
+        const v = await api("/auth/verify");
+        if (v.valid && v.portal === PORTAL) {
+          userName = v.name;
+          showAppShell();
+          return;
+        }
+      } catch (e) { /* falls through to login gate */ }
+    }
+    showLoginGate();
+  })();
+
+  // ===== Login =====
+  document.getElementById("loginBtn").addEventListener("click", async () => {
+    const name = document.getElementById("loginName").value.trim();
+    const passcode = document.getElementById("loginPasscode").value;
+    const errBox = document.getElementById("loginError");
+    errBox.classList.remove("show");
+
+    if (!name || !passcode) {
+      errBox.textContent = "Enter your name and the passcode.";
+      errBox.classList.add("show");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ portal: PORTAL, passcode, name })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Login failed.");
+      authToken = data.token;
+      userName = data.name;
+      localStorage.setItem(TOKEN_KEY, authToken);
+      localStorage.setItem(NAME_KEY, userName);
+      showAppShell();
+    } catch (e) {
+      errBox.textContent = e.message;
+      errBox.classList.add("show");
+    }
+  });
+
+  document.getElementById("logoutBtn").addEventListener("click", async () => {
+    try { await api("/auth/logout", { method: "POST" }); } catch (e) {}
+    clearSession();
+    showLoginGate();
+  });
+
+  // ===== Clock / theme =====
+  function updateClock() {
+    document.getElementById("clock").textContent = new Date().toLocaleString("en-US", { weekday: "short", hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  }
+  updateClock(); setInterval(updateClock, 1000);
+
+  function initials(name) { return name.split(" ").map(p => p[0]).join("").slice(0, 2).toUpperCase(); }
+  function formatDateTime(str) {
+    if (!str) return "—";
+    const d = new Date(str);
+    if (isNaN(d)) return "—";
+    return d.toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+  }
+  const logStatusLabel = { pending: "Pending", hold: "On Hold", approved: "Approved", "with-host": "With Host", rejected: "Rejected", "checked-out": "Checked Out" };
+
+  let currentVisitorId = null;
+
+  // ============================================================
+  // Portal init — runs once after login succeeds
+  // ============================================================
+  function initPortal() {
+    loadVisitors();
+
+    let searchTimer;
+    document.getElementById("searchInput").addEventListener("input", (e) => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => loadVisitors(e.target.value.trim()), 300);
+    });
+
+    document.getElementById("registerBtn").addEventListener("click", openRegister);
+    document.getElementById("cancelEdit").addEventListener("click", () => document.getElementById("modalOverlay").classList.remove("show"));
+    document.getElementById("modalOverlay").addEventListener("click", (e) => { if (e.target.id === "modalOverlay") e.target.classList.remove("show"); });
+    document.getElementById("saveEdit").addEventListener("click", saveVisitorForm);
+
+    document.getElementById("closeChoice").addEventListener("click", () => document.getElementById("choiceOverlay").classList.remove("show"));
+    document.getElementById("choiceOverlay").addEventListener("click", (e) => { if (e.target.id === "choiceOverlay") e.target.classList.remove("show"); });
+    document.getElementById("choiceAddVisit").addEventListener("click", () => { document.getElementById("choiceOverlay").classList.remove("show"); openLogVisitPage(); });
+    document.getElementById("choiceViewHistory").addEventListener("click", () => { document.getElementById("choiceOverlay").classList.remove("show"); openHistoryPage(); });
+
+    document.getElementById("backFromLogVisit").addEventListener("click", () => document.getElementById("pageLogVisit").classList.remove("show"));
+    document.getElementById("backFromHistory").addEventListener("click", () => document.getElementById("pageVisitHistory").classList.remove("show"));
+
+    document.getElementById("btnWalkin").addEventListener("click", () => setAppt("walkin"));
+    document.getElementById("btnScheduled").addEventListener("click", () => setAppt("scheduled"));
+    document.getElementById("saveVisit").addEventListener("click", submitVisit);
+
+    initGuide();
+  }
+
+  let apptType = "walkin";
+  function setAppt(type) {
+    apptType = type;
+    document.getElementById("btnWalkin").classList.toggle("active", type === "walkin");
+    document.getElementById("btnScheduled").classList.toggle("active", type === "scheduled");
+  }
+
+  // ===== Visitor table =====
+  async function loadVisitors(q = "") {
+    try {
+      const rows = await api(`/visitors${q ? `?search=${encodeURIComponent(q)}` : ""}`);
+      renderTable(rows);
+    } catch (e) { showToast(e.message, true); }
+  }
+
+  function renderTable(list) {
+    const body = document.getElementById("tableBody");
+    document.getElementById("countChip").textContent = `${list.length} record${list.length !== 1 ? "s" : ""}`;
+    if (list.length === 0) {
+      body.innerHTML = `<tr class="empty-row"><td colspan="6">No matching visitors found.</td></tr>`;
+      return;
+    }
+    body.innerHTML = list.map(v => `
+      <tr class="visitor-row" data-id="${v.id}">
+        <td><div class="visitor-name">${v.name}</div><div class="visitor-sub">ID #${String(v.id).padStart(4, "0")}</div></td>
+        <td>${v.phone}</td>
+        <td>${v.id_type}</td>
+        <td><span class="id-tag">${v.id_number}</span></td>
+        <td>${formatDateTime(v.registered_at)}</td>
+        <td style="text-align:right;"><button class="edit-btn" data-id="${v.id}"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg>Edit</button></td>
+      </tr>
+    `).join("");
+
+    document.querySelectorAll(".visitor-row").forEach(row => row.addEventListener("click", () => openChoice(Number(row.dataset.id), list)));
+    document.querySelectorAll(".edit-btn").forEach(btn => btn.addEventListener("click", (e) => { e.stopPropagation(); openEdit(Number(btn.dataset.id), list); }));
+  }
+
+  // ===== Register / Edit =====
+  let isRegisterMode = false, editingId = null;
+
+  function openRegister() {
+    isRegisterMode = true; editingId = null;
+    document.getElementById("editModalTitle").textContent = "Register New Visitor";
+    document.getElementById("editModalSub").textContent = "Enter the details for a first-time visitor.";
+    ["editName","editPhone","editIdNumber"].forEach(id => { document.getElementById(id).value = ""; clearFieldError(id); });
+    document.getElementById("editIdType").value = "National ID (NIN)";
+    document.getElementById("modalOverlay").classList.add("show");
+  }
+
+  function openEdit(id, list) {
+    const v = list.find(x => x.id === id);
+    if (!v) return;
+    isRegisterMode = false; editingId = id;
+    document.getElementById("editModalTitle").textContent = "Edit Visitor Information";
+    document.getElementById("editModalSub").textContent = "Update the record for this visitor.";
+    document.getElementById("editName").value = v.name;
+    document.getElementById("editPhone").value = v.phone;
+    document.getElementById("editIdType").value = v.id_type;
+    document.getElementById("editIdNumber").value = v.id_number;
+    ["editName","editPhone","editIdNumber"].forEach(clearFieldError);
+    document.getElementById("modalOverlay").classList.add("show");
+  }
+
+  function clearFieldError(id) {
+    document.getElementById(id).classList.remove("invalid");
+    document.getElementById(id).closest(".field").classList.remove("error");
+  }
+  function markInvalid(id) {
+    document.getElementById(id).classList.add("invalid");
+    document.getElementById(id).closest(".field").classList.add("error");
+  }
+
+  async function saveVisitorForm() {
+    const name = document.getElementById("editName").value.trim();
+    const phone = document.getElementById("editPhone").value.trim();
+    const idType = document.getElementById("editIdType").value;
+    const idNumber = document.getElementById("editIdNumber").value.trim();
+
+    ["editName","editPhone","editIdNumber"].forEach(clearFieldError);
+    let valid = true;
+    if (!/^[A-Za-z\s'-]{2,}$/.test(name)) { markInvalid("editName"); valid = false; }
+    if (!/^\d{11}$/.test(phone)) { markInvalid("editPhone"); valid = false; }
+    if (idNumber.length < 3) { markInvalid("editIdNumber"); valid = false; }
+    if (!valid) return;
+
+    const btn = document.getElementById("saveEdit");
+    btn.disabled = true;
+    try {
+      if (isRegisterMode) {
+        await api("/visitors", { method: "POST", body: JSON.stringify({ name, phone, idType, idNumber }) });
+        showToast(`${name} was registered.`);
+      } else {
+        await api(`/visitors/${editingId}`, { method: "PUT", body: JSON.stringify({ name, phone, idType, idNumber }) });
+        showToast(`${name}'s record was updated.`);
+      }
+      document.getElementById("modalOverlay").classList.remove("show");
+      loadVisitors(document.getElementById("searchInput").value.trim());
+    } catch (e) {
+      showToast(e.message, true);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  // ===== Choice card =====
+  function openChoice(id, list) {
+    const v = list.find(x => x.id === id);
+    if (!v) return;
+    currentVisitorId = id;
+    document.getElementById("choiceAvatar").textContent = initials(v.name);
+    document.getElementById("choiceName").textContent = v.name;
+    document.getElementById("choiceMeta").textContent = `${v.phone} · ${v.id_type} · ${v.id_number}`;
+    document.getElementById("choiceAddVisitLabel").textContent = `Add New Visit for ${v.name}`;
+    document.getElementById("choiceViewHistoryLabel").textContent = `View All Visits by ${v.name}`;
+    currentVisitorCache = v;
+    document.getElementById("choiceOverlay").classList.add("show");
+  }
+  let currentVisitorCache = null;
+
+  // ===== Log a new visit =====
+  function openLogVisitPage() {
+    const v = currentVisitorCache;
+    document.getElementById("logVisitAvatar").textContent = initials(v.name);
+    document.getElementById("logVisitName").textContent = v.name;
+    document.getElementById("logVisitMeta").textContent = `${v.phone} · ${v.id_type} · ${v.id_number}`;
+    document.getElementById("visitDepartment").value = "Claims";
+    document.getElementById("visitHost").value = "";
+    document.getElementById("visitPurpose").value = "";
+    ["visitHost","visitPurpose"].forEach(clearFieldError);
+    setAppt("walkin");
+    document.getElementById("pageLogVisit").classList.add("show");
+  }
+
+  async function submitVisit() {
+    const department = document.getElementById("visitDepartment").value;
+    const host = document.getElementById("visitHost").value.trim();
+    const purpose = document.getElementById("visitPurpose").value.trim();
+
+    ["visitHost","visitPurpose"].forEach(clearFieldError);
+    let valid = true;
+    if (!host) { markInvalid("visitHost"); valid = false; }
+    if (!purpose) { markInvalid("visitPurpose"); valid = false; }
+    if (!valid) return;
+
+    const btn = document.getElementById("saveVisit");
+    btn.disabled = true;
+    try {
+      await api(`/visitors/${currentVisitorId}/visits`, {
+        method: "POST",
+        body: JSON.stringify({ department, host, purpose, apptType })
+      });
+      document.getElementById("pageLogVisit").classList.remove("show");
+      showToast("Visit logged — sent to Front Desk for approval.");
+      openHistoryPage(true);
+    } catch (e) {
+      showToast(e.message, true);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  // ===== Visit history =====
+  async function openHistoryPage(highlightNewest = false) {
+    const v = currentVisitorCache;
+    document.getElementById("historyAvatar").textContent = initials(v.name);
+    document.getElementById("historyName").textContent = v.name;
+    document.getElementById("historyMeta").textContent = `${v.phone} · ${v.id_type} · ${v.id_number}`;
+    document.getElementById("pageVisitHistory").classList.add("show");
+    try {
+      const visits = await api(`/visitors/${currentVisitorId}/visits`);
+      renderHistory(visits, highlightNewest);
+    } catch (e) { showToast(e.message, true); }
+  }
+
+  function renderHistory(list, highlightNewest) {
+    const body = document.getElementById("historyTableBody");
+    document.getElementById("historyCountChip").textContent = `${list.length} visit${list.length !== 1 ? "s" : ""}`;
+    if (list.length === 0) {
+      body.innerHTML = `<tr class="empty-row"><td colspan="6">No visits logged yet.</td></tr>`;
+      return;
+    }
+    const newestId = highlightNewest ? Math.max(...list.map(v => v.id)) : null;
+    body.innerHTML = list.map(v => `
+      <tr class="${v.id === newestId ? "recent-visit-row" : ""}">
+        <td style="font-weight:700;">${v.department}</td>
+        <td>${v.purpose}</td>
+        <td>${v.host}</td>
+        <td>${formatDateTime(v.checkin)}</td>
+        <td>${formatDateTime(v.checkout)}</td>
+        <td><span class="visit-status-cell ${v.status}">${logStatusLabel[v.status] || v.status}</span>${v.id === newestId ? '<span class="recent-tag"><span class="dot"></span>Recently logged</span>' : ""}</td>
+      </tr>
+    `).join("");
+  }
+
+  // ===== Toast =====
+  function showToast(msg, isError = false) {
+    const toast = document.getElementById("toast");
+    document.getElementById("toastText").textContent = msg;
+    toast.classList.toggle("error", !!isError);
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 3000);
+  }
+
+  // ============================================================
+  // AI Guide widget
+  // ============================================================
+  function initGuide() {
+    const fab = document.getElementById("guideFab");
+    const panel = document.getElementById("guidePanel");
+    fab.addEventListener("click", () => panel.classList.toggle("show"));
+    document.getElementById("closeGuide").addEventListener("click", () => panel.classList.remove("show"));
+
+    document.querySelectorAll("#guideQuick button").forEach(btn => {
+      btn.addEventListener("click", () => askGuide(btn.dataset.q));
+    });
+
+    document.getElementById("guideSend").addEventListener("click", sendGuideInput);
+    document.getElementById("guideInput").addEventListener("keydown", (e) => { if (e.key === "Enter") sendGuideInput(); });
+  }
+
+  function sendGuideInput() {
+    const input = document.getElementById("guideInput");
+    const q = input.value.trim();
+    if (!q) return;
+    input.value = "";
+    askGuide(q);
+  }
+
+  async function askGuide(question) {
+    const body = document.getElementById("guideBody");
+    body.insertAdjacentHTML("beforeend", `<div class="guide-msg user">${escapeHtml(question)}</div>`);
+    body.insertAdjacentHTML("beforeend", `<div class="guide-msg bot guide-typing" id="guideTyping">Thinking...</div>`);
+    body.scrollTop = body.scrollHeight;
+
+    try {
+      const res = await fetch(`${API_BASE}/ai/ask`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ portal: PORTAL, question })
+      });
+      const data = await res.json();
+      document.getElementById("guideTyping").remove();
+      if (!res.ok) throw new Error(data.error || "Couldn't get an answer.");
+      body.insertAdjacentHTML("beforeend", `<div class="guide-msg bot">${escapeHtml(data.answer)}</div>`);
+    } catch (e) {
+      document.getElementById("guideTyping").remove();
+      body.insertAdjacentHTML("beforeend", `<div class="guide-msg bot">Sorry, I couldn't reach the guide right now. (${escapeHtml(e.message)})</div>`);
+    }
+    body.scrollTop = body.scrollHeight;
+  }
+
+  function escapeHtml(str) {
+    const d = document.createElement("div");
+    d.textContent = str;
+    return d.innerHTML;
+  }
+</script>
+
+</body>
+</html>

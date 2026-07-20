@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Front Desk Portal — REX Insurance VMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FFFFFF; --surface: #F7F8FA; --surface-hover: #F0F2F5; --border: #E4E7EC;
+    --text-primary: #1C2333; --text-secondary: #5B6472; --text-tertiary: #8A93A3;
+    --accent: #B8792A; --accent-tint: #FBF1E4; --accent-hover: #9A631F;
+    --danger: #B3261E; --danger-bg: #FBEAE9; --success: #1E7B4D; --success-bg: #E7F5EC;
+    --hold: #6E7684; --hold-bg: #EEF0F3;
+    --font-display: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: var(--font-body); background: var(--bg); color: var(--text-primary); -webkit-font-smoothing: antialiased; min-height: 100vh; transition: background-color .3s, color .3s; }
+  body.theme-dark { --bg: #0B0D12; --surface: #15171E; --surface-hover: #1C1F28; --border: #262A35; --text-primary: #F2F4F8; --text-secondary: #A6ADBB; --text-tertiary: #6E7684; --accent-tint: #2E230F; --success-bg: #123324; --hold-bg: #1C1F28; }
+
+  .top-bar { display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; border-bottom: 1px solid var(--border); }
+  .top-left { display: flex; align-items: center; gap: 12px; }
+  .badge-icon { width: 34px; height: 34px; border-radius: 9px; background: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .badge-icon svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .top-left .titles .company { font-family: var(--font-display); font-weight: 800; font-size: 14.5px; }
+  .top-left .titles .portal { font-size: 12.5px; color: var(--text-secondary); }
+  .top-right { display: flex; align-items: center; gap: 14px; }
+  #clock { font-size: 12.5px; color: var(--text-tertiary); font-variant-numeric: tabular-nums; }
+  .user-chip { font-size: 12.5px; color: var(--text-secondary); background: var(--surface); border: 1px solid var(--border); padding: 6px 12px; border-radius: 100px; }
+  .live-dot { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; color: var(--success); }
+  .live-dot .d { width: 6px; height: 6px; border-radius: 50%; background: var(--success); animation: pulse 1.6s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.3;} }
+  .logout-btn { font-size: 12.5px; font-weight: 600; color: var(--danger); background: var(--danger-bg); border: none; padding: 7px 12px; border-radius: 7px; cursor: pointer; }
+  .theme-toggle { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .theme-toggle:hover { background: var(--surface-hover); }
+  .theme-toggle svg { width: 16px; height: 16px; fill: none; stroke: var(--text-primary); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .theme-toggle .icon-moon { display: none; }
+  body.theme-dark .theme-toggle .icon-sun { display: none; }
+  body.theme-dark .theme-toggle .icon-moon { display: block; }
+
+  .conn-banner { display: none; background: var(--accent); color: #fff; font-size: 12.5px; font-weight: 600; text-align: center; padding: 8px; }
+  .conn-banner.show { display: block; }
+
+  .app-shell { display: none; }
+  .app-shell.ready { display: block; }
+  .layout { max-width: 1180px; margin: 0 auto; padding: 28px 32px 60px; }
+
+  .stats-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px; }
+  .stat-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+  .stat-box .num { font-family: var(--font-display); font-size: 22px; font-weight: 800; }
+  .stat-box .label { font-size: 11.5px; color: var(--text-tertiary); margin-top: 2px; }
+
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px 22px 8px; }
+  .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+  .panel-header h2 { font-family: var(--font-display); font-size: 16px; font-weight: 700; }
+  .panel-header .sub { font-size: 12.5px; color: var(--text-tertiary); }
+  .header-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+  .filter-tab { font-size: 12.5px; font-weight: 600; color: var(--text-secondary); background: var(--bg); border: 1px solid var(--border); padding: 6px 12px; border-radius: 100px; cursor: pointer; }
+  .filter-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .search-row { position: relative; width: 220px; max-width: 100%; }
+  .search-row svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; stroke: var(--text-tertiary); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .search-row input { width: 100%; padding: 9px 12px 9px 33px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text-primary); font-size: 13.5px; outline: none; }
+  .search-row input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-tint); }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th { text-align: left; font-size: 11.5px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: var(--text-tertiary); padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  tbody td { padding: 13px 12px; font-size: 13.5px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr.visit-row { cursor: pointer; }
+  tbody tr.visit-row:hover { background: var(--surface-hover); }
+  .visitor-name { font-weight: 700; }
+  .visitor-sub { font-size: 11.5px; color: var(--text-tertiary); margin-top: 2px; }
+  .appt-tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px; }
+  .appt-tag.scheduled { background: #E8F1F2; color: #0F4C5C; }
+  .appt-tag.walkin { background: var(--accent-tint); color: var(--accent); }
+  body.theme-dark .appt-tag.scheduled { background: #12262B; }
+  .status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 100px; white-space: nowrap; }
+  .status-pill .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .status-pill.pending { background: var(--accent-tint); color: var(--accent); } .status-pill.pending .dot { background: var(--accent); }
+  .status-pill.hold { background: var(--hold-bg); color: var(--hold); } .status-pill.hold .dot { background: var(--hold); }
+  .status-pill.approved { background: #E8F1F2; color: #0F4C5C; } .status-pill.approved .dot { background: #0F4C5C; }
+  .status-pill.with-host { background: var(--success-bg); color: var(--success); } .status-pill.with-host .dot { background: var(--success); }
+  .status-pill.rejected { background: var(--danger-bg); color: var(--danger); } .status-pill.rejected .dot { background: var(--danger); }
+  .status-pill.checked-out { background: var(--hold-bg); color: var(--text-tertiary); } .status-pill.checked-out .dot { background: var(--text-tertiary); }
+  .empty-row td { text-align: center; padding: 48px 20px; color: var(--text-tertiary); font-size: 13.5px; }
+
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(10,12,16,.5); align-items: center; justify-content: center; z-index: 100; padding: 20px; overflow-y: auto; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; width: 100%; max-width: 460px; padding: 24px; margin: auto; }
+  .modal-head { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+  .modal-avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--accent-tint); color: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+  .modal-head .name { font-family: var(--font-display); font-weight: 700; font-size: 16px; }
+  .modal-head .meta { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+  .detail-item .label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: var(--text-tertiary); margin-bottom: 3px; }
+  .detail-item .value { font-size: 13.5px; font-weight: 600; }
+  .stage-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: var(--text-tertiary); margin-bottom: 10px; }
+  .action-btn { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; font-family: var(--font-body); margin-bottom: 8px; }
+  .action-btn:hover { background: var(--surface-hover); }
+  .action-btn .icon { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .action-btn .icon svg { width: 15px; height: 15px; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .action-btn .t { font-weight: 700; font-size: 13.5px; } .action-btn .s { font-size: 11.5px; color: var(--text-tertiary); margin-top: 1px; }
+  .action-btn.accept .icon { background: var(--success-bg); } .action-btn.accept .icon svg { stroke: var(--success); }
+  .action-btn.reject .icon { background: var(--danger-bg); } .action-btn.reject .icon svg { stroke: var(--danger); }
+  .action-btn.hold .icon { background: var(--hold-bg); } .action-btn.hold .icon svg { stroke: var(--hold); }
+  .action-btn.available .icon { background: var(--success-bg); } .action-btn.available .icon svg { stroke: var(--success); }
+  .action-btn.unavailable .icon { background: var(--hold-bg); } .action-btn.unavailable .icon svg { stroke: var(--hold); }
+  .action-btn.checkout .icon { background: var(--accent-tint); } .action-btn.checkout .icon svg { stroke: var(--accent); }
+  .terminal-note { display: flex; align-items: center; gap: 10px; padding: 14px; border-radius: 10px; background: var(--surface); font-size: 13px; color: var(--text-secondary); }
+  .btn-secondary { background: var(--surface); border: 1px solid var(--border); color: var(--text-secondary); padding: 11px 16px; border-radius: 9px; font-size: 13.5px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 12px; }
+  .btn-secondary:hover { background: var(--surface-hover); }
+
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--accent); color: #fff; font-size: 13px; font-weight: 600; padding: 11px 18px; border-radius: 9px; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; display: flex; align-items: center; gap: 8px; z-index: 300; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.error { background: var(--danger); }
+
+  .login-gate { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .login-card { width: 100%; max-width: 380px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 32px 28px; }
+  .login-card .badge-icon { margin: 0 auto 18px; width: 46px; height: 46px; }
+  .login-card .badge-icon svg { width: 24px; height: 24px; }
+  .login-card h1 { font-family: var(--font-display); font-size: 18px; font-weight: 800; text-align: center; margin-bottom: 4px; }
+  .login-card .sub { font-size: 12.5px; color: var(--text-tertiary); text-align: center; margin-bottom: 24px; }
+  .login-error { font-size: 12.5px; color: var(--danger); background: var(--danger-bg); padding: 9px 12px; border-radius: 8px; margin-bottom: 14px; display: none; }
+  .login-error.show { display: block; }
+  .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .field label { font-size: 12.5px; font-weight: 600; color: var(--text-secondary); }
+  .field input { font-family: var(--font-body); font-size: 13.5px; padding: 9px 11px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text-primary); outline: none; width: 100%; }
+  .field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-tint); }
+  .btn-primary { flex: 1; background: var(--accent); color: #fff; border: none; padding: 11px 16px; border-radius: 9px; font-size: 13.5px; font-weight: 700; cursor: pointer; }
+  .btn-primary:hover { background: var(--accent-hover); }
+
+  .guide-fab { position: fixed; bottom: 24px; right: 24px; width: 52px; height: 52px; border-radius: 50%; background: var(--accent); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(0,0,0,.25); z-index: 150; }
+  .guide-fab svg { width: 24px; height: 24px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .guide-panel { display: none; position: fixed; bottom: 88px; right: 24px; width: 340px; max-width: calc(100vw - 32px); max-height: 480px; background: var(--bg); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.2); z-index: 150; flex-direction: column; overflow: hidden; }
+  .guide-panel.show { display: flex; }
+  .guide-head { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .guide-head .t { font-family: var(--font-display); font-weight: 700; font-size: 13.5px; }
+  .guide-head .close-guide { background: none; border: none; color: var(--text-tertiary); cursor: pointer; font-size: 18px; line-height: 1; }
+  .guide-body { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+  .guide-msg { font-size: 13px; line-height: 1.5; padding: 9px 12px; border-radius: 10px; max-width: 88%; }
+  .guide-msg.bot { background: var(--surface); align-self: flex-start; }
+  .guide-msg.user { background: var(--accent); color: #fff; align-self: flex-end; }
+  .guide-quick { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 12px; }
+  .guide-quick button { font-size: 11.5px; font-weight: 600; color: var(--accent); background: var(--accent-tint); border: none; padding: 6px 10px; border-radius: 100px; cursor: pointer; }
+  .guide-input-row { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--border); }
+  .guide-input-row input { flex: 1; font-size: 13px; padding: 9px 11px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text-primary); outline: none; }
+  .guide-input-row button { background: var(--accent); color: #fff; border: none; width: 36px; border-radius: 8px; cursor: pointer; flex-shrink: 0; }
+
+  @media (max-width: 900px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 720px) { .layout { padding: 20px; } thead th:nth-child(3), tbody td:nth-child(3) { display: none; } .search-row { width: 100%; } .detail-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body class="theme-dark">
+
+  <!-- ===================== LOGIN GATE ===================== -->
+  <div class="login-gate" id="loginGate">
+    <div class="login-card">
+      <div class="badge-icon"><svg viewBox="0 0 24 24"><path d="M3 20h18"/><path d="M4 17a8 8 0 0 1 16 0"/><path d="M12 4v5"/><circle cx="12" cy="2.5" r="1"/></svg></div>
+      <h1>Front Desk Portal</h1>
+      <div class="sub">REX Insurance · Enter the front desk passcode to continue</div>
+      <div class="login-error" id="loginError"></div>
+      <div class="field"><label>Your name</label><input type="text" id="loginName" placeholder="e.g. Blessing Adeyemi"></div>
+      <div class="field"><label>Passcode</label><input type="password" id="loginPasscode" placeholder="Enter passcode"></div>
+      <button class="btn-primary" id="loginBtn" style="width:100%;">Log In</button>
+    </div>
+  </div>
+
+  <!-- ===================== APP SHELL ===================== -->
+  <div class="app-shell" id="appShell">
+    <div class="conn-banner" id="connBanner">Connecting to server — this can take up to a minute on first load...</div>
+
+    <div class="top-bar">
+      <div class="top-left">
+        <div class="badge-icon"><svg viewBox="0 0 24 24"><path d="M3 20h18"/><path d="M4 17a8 8 0 0 1 16 0"/><path d="M12 4v5"/><circle cx="12" cy="2.5" r="1"/></svg></div>
+        <div class="titles"><div class="company">REX Insurance</div><div class="portal">Front Desk Portal</div></div>
+      </div>
+      <div class="top-right">
+        <span class="live-dot"><span class="d"></span>Live</span>
+        <span class="user-chip" id="userChip"></span>
+        <div id="clock"></div>
+        <button class="logout-btn" id="logoutBtn">Log Out</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <div class="stats-row">
+        <div class="stat-box"><div class="num" id="statPending">0</div><div class="label">Pending review</div></div>
+        <div class="stat-box"><div class="num" id="statHold">0</div><div class="label">On hold / waiting</div></div>
+        <div class="stat-box"><div class="num" id="statApproved">0</div><div class="label">Approved</div></div>
+        <div class="stat-box"><div class="num" id="statWithHost">0</div><div class="label">With host</div></div>
+        <div class="stat-box"><div class="num" id="statRejected">0</div><div class="label">Rejected</div></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div><h2>Visitor Status Board</h2><span class="sub">Live status of every visitor sent over from Security today</span></div>
+          <div class="header-actions">
+            <div class="filter-tabs" id="filterTabs">
+              <button class="filter-tab active" data-filter="all">All</button>
+              <button class="filter-tab" data-filter="pending">Pending</button>
+              <button class="filter-tab" data-filter="hold">Hold</button>
+              <button class="filter-tab" data-filter="approved">Approved</button>
+              <button class="filter-tab" data-filter="with-host">With Host</button>
+              <button class="filter-tab" data-filter="rejected">Rejected</button>
+              <button class="filter-tab" data-filter="checked-out">Checked Out</button>
+            </div>
+            <div class="search-row"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><input type="text" id="searchInput" placeholder="Search visitor or host..."></div>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>Visitor</th><th>Host</th><th>Appointment</th><th>Check-in</th><th>Status</th></tr></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Action Modal ===== -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-avatar" id="mAvatar"></div>
+        <div><div class="name" id="mName"></div><div class="meta" id="mMeta"></div></div>
+      </div>
+      <div class="detail-grid">
+        <div class="detail-item"><div class="label">Department</div><div class="value" id="mDept"></div></div>
+        <div class="detail-item"><div class="label">Host</div><div class="value" id="mHost"></div></div>
+        <div class="detail-item"><div class="label">Purpose</div><div class="value" id="mPurpose"></div></div>
+        <div class="detail-item"><div class="label">Check-in</div><div class="value" id="mCheckin"></div></div>
+      </div>
+      <div id="mActionArea"></div>
+      <button class="btn-secondary" id="closeModal">Close</button>
+    </div>
+  </div>
+
+  <!-- ===== AI Guide ===== -->
+  <button class="guide-fab" id="guideFab" aria-label="Open help guide"><svg viewBox="0 0 24 24"><path d="M12 18h.01M9.09 9a3 3 0 1 1 5.83 1c0 2-3 2-3 4"/><circle cx="12" cy="12" r="9"/></svg></button>
+  <div class="guide-panel" id="guidePanel">
+    <div class="guide-head"><span class="t">Front Desk Portal Guide</span><button class="close-guide" id="closeGuide">&times;</button></div>
+    <div class="guide-body" id="guideBody"><div class="guide-msg bot">Hi! Ask me how to approve, hold, or check out a visitor on the status board.</div></div>
+    <div class="guide-quick" id="guideQuick">
+      <button data-q="How do I approve a visitor?">Approve a visitor</button>
+      <button data-q="What does the Hold status mean?">What is Hold?</button>
+      <button data-q="How do I check out a visitor?">Check out a visitor</button>
+    </div>
+    <div class="guide-input-row">
+      <input type="text" id="guideInput" placeholder="Ask a question...">
+      <button id="guideSend"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg><span id="toastText"></span></div>
+
+<script>
+  // ============================================================
+  // CONFIG
+  // ============================================================
+  const API_BASE = "https://your-backend.onrender.com/api";
+  const PORTAL = "frontdesk";
+  const TOKEN_KEY = "rex_vms_token_frontdesk";
+  const NAME_KEY = "rex_vms_name_frontdesk";
+
+  let authToken = localStorage.getItem(TOKEN_KEY);
+  let userName = localStorage.getItem(NAME_KEY);
+  let visits = [];
+  let activeFilter = "all";
+  let activeVisitId = null;
+
+  async function api(path, options = {}) {
+    const res = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      headers: { "Content-Type": "application/json", ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}), ...(options.headers || {}) }
+    });
+    if (res.status === 401) { clearSession(); showLoginGate(); throw new Error("Session expired. Please log in again."); }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "Something went wrong.");
+    return data;
+  }
+
+  function clearSession() { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(NAME_KEY); authToken = null; userName = null; stopPolling(); }
+  function showLoginGate() { document.getElementById("loginGate").style.display = "flex"; document.getElementById("appShell").classList.remove("ready"); }
+  function showAppShell() { document.getElementById("loginGate").style.display = "none"; document.getElementById("appShell").classList.add("ready"); document.getElementById("userChip").textContent = userName; initPortal(); }
+
+  async function warmUp() {
+    const banner = document.getElementById("connBanner");
+    banner.classList.add("show");
+    try { await fetch(`${API_BASE}/ping`); } catch (e) {}
+    banner.classList.remove("show");
+  }
+
+  (async function boot() {
+    warmUp();
+    if (authToken) {
+      try {
+        const v = await api("/auth/verify");
+        if (v.valid && v.portal === PORTAL) { userName = v.name; showAppShell(); return; }
+      } catch (e) {}
+    }
+    showLoginGate();
+  })();
+
+  document.getElementById("loginBtn").addEventListener("click", async () => {
+    const name = document.getElementById("loginName").value.trim();
+    const passcode = document.getElementById("loginPasscode").value;
+    const errBox = document.getElementById("loginError");
+    errBox.classList.remove("show");
+    if (!name || !passcode) { errBox.textContent = "Enter your name and the passcode."; errBox.classList.add("show"); return; }
+    try {
+      const res = await fetch(`${API_BASE}/auth/login`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ portal: PORTAL, passcode, name }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Login failed.");
+      authToken = data.token; userName = data.name;
+      localStorage.setItem(TOKEN_KEY, authToken); localStorage.setItem(NAME_KEY, userName);
+      showAppShell();
+    } catch (e) { errBox.textContent = e.message; errBox.classList.add("show"); }
+  });
+
+  document.getElementById("logoutBtn").addEventListener("click", async () => {
+    try { await api("/auth/logout", { method: "POST" }); } catch (e) {}
+    clearSession(); showLoginGate();
+  });
+
+  function updateClock() { document.getElementById("clock").textContent = new Date().toLocaleString("en-US", { weekday: "short", hour: "2-digit", minute: "2-digit", second: "2-digit" }); }
+  updateClock(); setInterval(updateClock, 1000);
+
+  function initials(name) { return name.split(" ").map(p => p[0]).join("").slice(0, 2).toUpperCase(); }
+  function formatTime(str) { const d = new Date(str); return d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }); }
+  const statusMeta = { pending: "Pending Review", hold: "On Hold", approved: "Approved", "with-host": "With Host", rejected: "Rejected", "checked-out": "Checked Out" };
+
+  function initPortal() {
+    document.getElementById("searchInput").addEventListener("input", renderTable);
+    document.querySelectorAll(".filter-tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".filter-tab").forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+        activeFilter = tab.dataset.filter;
+        renderTable();
+      });
+    });
+    document.getElementById("closeModal").addEventListener("click", () => document.getElementById("modalOverlay").classList.remove("show"));
+    document.getElementById("modalOverlay").addEventListener("click", (e) => { if (e.target.id === "modalOverlay") e.target.classList.remove("show"); });
+
+    loadVisits(true);
+    startPolling();
+    initGuide();
+  }
+
+  // ============================================================
+  // Adaptive polling: 25s baseline, +5s each cycle with no change,
+  // capped at 1:50 (110s), reset to 25s the instant something changes.
+  // ============================================================
+  const POLL_MIN = 25000, POLL_STEP = 5000, POLL_MAX = 110000;
+  let pollInterval = POLL_MIN;
+  let pollTimer = null;
+  let lastSnapshotKey = "";
+
+  function snapshotKey(list) {
+    return list.map(v => `${v.id}:${v.status}`).join("|");
+  }
+
+  function startPolling() {
+    stopPolling();
+    pollTimer = setTimeout(pollTick, pollInterval);
+  }
+  function stopPolling() { if (pollTimer) clearTimeout(pollTimer); pollTimer = null; }
+
+  async function pollTick() {
+    const changed = await loadVisits(false);
+    pollInterval = changed ? POLL_MIN : Math.min(pollInterval + POLL_STEP, POLL_MAX);
+    pollTimer = setTimeout(pollTick, pollInterval);
+  }
+
+  // Returns true if the fetched data differs from what's on screen
+  async function loadVisits(isInitial) {
+    try {
+      const rows = await api("/visits");
+      const key = snapshotKey(rows);
+      const changed = key !== lastSnapshotKey;
+      lastSnapshotKey = key;
+      visits = rows;
+      renderTable();
+      return isInitial ? false : changed;
+    } catch (e) {
+      if (isInitial) showToast(e.message, true);
+      return false;
+    }
+  }
+
+  function renderTable() {
+    const q = document.getElementById("searchInput").value.trim().toLowerCase();
+    const list = visits.filter(v => {
+      const matchesFilter = activeFilter === "all" || v.status === activeFilter;
+      const matchesSearch = !q || v.visitor_name.toLowerCase().includes(q) || v.host.toLowerCase().includes(q);
+      return matchesFilter && matchesSearch;
+    });
+
+    const body = document.getElementById("tableBody");
+    if (list.length === 0) {
+      body.innerHTML = `<tr class="empty-row"><td colspan="5">No visitors match this view.</td></tr>`;
+    } else {
+      body.innerHTML = list.map(v => `
+        <tr class="visit-row" data-id="${v.id}">
+          <td><div class="visitor-name">${v.visitor_name}</div><div class="visitor-sub">${v.department}</div></td>
+          <td>${v.host}</td>
+          <td><span class="appt-tag ${v.appt_type}">${v.appt_type === "scheduled" ? "Scheduled" : "Walk-in"}</span></td>
+          <td>${formatTime(v.checkin)}</td>
+          <td><span class="status-pill ${v.status}"><span class="dot"></span>${statusMeta[v.status]}</span></td>
+        </tr>
+      `).join("");
+      document.querySelectorAll(".visit-row").forEach(row => row.addEventListener("click", () => openModal(Number(row.dataset.id))));
+    }
+
+    document.getElementById("statPending").textContent = visits.filter(v => v.status === "pending").length;
+    document.getElementById("statHold").textContent = visits.filter(v => v.status === "hold").length;
+    document.getElementById("statApproved").textContent = visits.filter(v => v.status === "approved").length;
+    document.getElementById("statWithHost").textContent = visits.filter(v => v.status === "with-host").length;
+    document.getElementById("statRejected").textContent = visits.filter(v => v.status === "rejected").length;
+  }
+
+  const overlay = document.getElementById("modalOverlay");
+
+  function openModal(id) {
+    const v = visits.find(x => x.id === id);
+    if (!v) return;
+    activeVisitId = id;
+    document.getElementById("mAvatar").textContent = initials(v.visitor_name);
+    document.getElementById("mName").textContent = v.visitor_name;
+    document.getElementById("mMeta").textContent = `${v.visitor_phone} · ${v.appt_type === "scheduled" ? "Scheduled" : "Walk-in"} visitor`;
+    document.getElementById("mDept").textContent = v.department;
+    document.getElementById("mHost").textContent = v.host;
+    document.getElementById("mPurpose").textContent = v.purpose;
+    document.getElementById("mCheckin").textContent = formatTime(v.checkin);
+    renderActionArea(v);
+    overlay.classList.add("show");
+  }
+
+  function icon(path) { return `<svg viewBox="0 0 24 24">${path}</svg>`; }
+
+  function renderActionArea(v) {
+    const area = document.getElementById("mActionArea");
+    if (v.status === "pending" || v.status === "hold") {
+      area.innerHTML = `
+        <div class="stage-label">Step 1 — Confirm host availability</div>
+        <button class="action-btn available" id="btnHostAvailable"><span class="icon">${icon('<path d="m5 13 4 4L19 7"/>')}</span><span><div class="t">Host is available</div><div class="s">Proceed to notify host of arrival</div></span></button>
+        <button class="action-btn unavailable" id="btnHostUnavailable"><span class="icon">${icon('<circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/>')}</span><span><div class="t">Host is unavailable</div><div class="s">Keep visitor on hold in reception</div></span></button>
+      `;
+      document.getElementById("btnHostAvailable").addEventListener("click", () => renderHostNotifiedActions(v));
+      document.getElementById("btnHostUnavailable").addEventListener("click", () => setStatus(v.id, "hold", `${v.visitor_name} placed on hold — host unavailable.`));
+    } else if (v.status === "approved") {
+      area.innerHTML = `<div class="stage-label">Approved — visitor directed to office</div>
+        <button class="action-btn checkout" id="btnWithHost"><span class="icon">${icon('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>')}</span><span><div class="t">Mark as with host</div><div class="s">Visitor has reached the host's office</div></span></button>`;
+      document.getElementById("btnWithHost").addEventListener("click", () => setStatus(v.id, "with-host", `${v.visitor_name} is now with ${v.host}.`));
+    } else if (v.status === "with-host") {
+      area.innerHTML = `<div class="stage-label">Visit in progress</div>
+        <button class="action-btn checkout" id="btnCheckout"><span class="icon">${icon('<path d="M9 12H3m0 0 4-4m-4 4 4 4"/><path d="M15 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/>')}</span><span><div class="t">Check out visitor</div><div class="s">Visitor has left the premises</div></span></button>`;
+      document.getElementById("btnCheckout").addEventListener("click", () => setStatus(v.id, "checked-out", `${v.visitor_name} has been checked out.`));
+    } else if (v.status === "rejected") {
+      area.innerHTML = `<div class="terminal-note">This visitor was rejected. No further action needed.</div>`;
+    } else if (v.status === "checked-out") {
+      area.innerHTML = `<div class="terminal-note">This visit is complete. The visitor has checked out.</div>`;
+    }
+  }
+
+  function renderHostNotifiedActions(v) {
+    const area = document.getElementById("mActionArea");
+    area.innerHTML = `
+      <div class="stage-label">Step 2 — Host notified. Awaiting response.</div>
+      <button class="action-btn accept" id="btnAccept"><span class="icon">${icon('<path d="m5 13 4 4L19 7"/>')}</span><span><div class="t">Accept — send them in</div><div class="s">Direct visitor to host's office</div></span></button>
+      <button class="action-btn reject" id="btnReject"><span class="icon">${icon('<path d="M18 6 6 18M6 6l12 12"/>')}</span><span><div class="t">Reject — not available</div><div class="s">Visitor asked to leave or reschedule</div></span></button>
+      <button class="action-btn hold" id="btnHold"><span class="icon">${icon('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>')}</span><span><div class="t">Hold — give me a few minutes</div><div class="s">Visitor waits a little longer</div></span></button>
+    `;
+    document.getElementById("btnAccept").addEventListener("click", () => setStatus(v.id, "approved", `${v.visitor_name} approved — directed to office.`));
+    document.getElementById("btnReject").addEventListener("click", () => setStatus(v.id, "rejected", `${v.visitor_name} was rejected.`));
+    document.getElementById("btnHold").addEventListener("click", () => setStatus(v.id, "hold", `${v.visitor_name} placed on hold.`));
+  }
+
+  async function setStatus(id, newStatus, message) {
+    try {
+      await api(`/visits/${id}`, { method: "PATCH", body: JSON.stringify({ status: newStatus }) });
+      overlay.classList.remove("show");
+      showToast(message);
+      pollInterval = POLL_MIN; // reset backoff immediately on our own action too
+      loadVisits(false);
+    } catch (e) { showToast(e.message, true); }
+  }
+
+  function showToast(msg, isError = false) {
+    const toast = document.getElementById("toast");
+    document.getElementById("toastText").textContent = msg;
+    toast.classList.toggle("error", !!isError);
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 3000);
+  }
+
+  // ===== AI Guide =====
+  function initGuide() {
+    const fab = document.getElementById("guideFab"), panel = document.getElementById("guidePanel");
+    fab.addEventListener("click", () => panel.classList.toggle("show"));
+    document.getElementById("closeGuide").addEventListener("click", () => panel.classList.remove("show"));
+    document.querySelectorAll("#guideQuick button").forEach(btn => btn.addEventListener("click", () => askGuide(btn.dataset.q)));
+    document.getElementById("guideSend").addEventListener("click", sendGuideInput);
+    document.getElementById("guideInput").addEventListener("keydown", (e) => { if (e.key === "Enter") sendGuideInput(); });
+  }
+  function sendGuideInput() {
+    const input = document.getElementById("guideInput");
+    const q = input.value.trim();
+    if (!q) return;
+    input.value = ""; askGuide(q);
+  }
+  async function askGuide(question) {
+    const body = document.getElementById("guideBody");
+    body.insertAdjacentHTML("beforeend", `<div class="guide-msg user">${escapeHtml(question)}</div>`);
+    body.insertAdjacentHTML("beforeend", `<div class="guide-msg bot" id="guideTyping">Thinking...</div>`);
+    body.scrollTop = body.scrollHeight;
+    try {
+      const res = await fetch(`${API_BASE}/ai/ask`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ portal: PORTAL, question }) });
+      const data = await res.json();
+      document.getElementById("guideTyping").remove();
+      if (!res.ok) throw new Error(data.error || "Couldn't get an answer.");
+      body.insertAdjacentHTML("beforeend", `<div class="guide-msg bot">${escapeHtml(data.answer)}</div>`);
+    } catch (e) {
+      document.getElementById("guideTyping").remove();
+      body.insertAdjacentHTML("beforeend", `<div class="guide-msg bot">Sorry, I couldn't reach the guide right now. (${escapeHtml(e.message)})</div>`);
+    }
+    body.scrollTop = body.scrollHeight;
+  }
+  function escapeHtml(str) { const d = document.createElement("div"); d.textContent = str; return d.innerHTML; }
+</script>
+
+</body>
+</html>
