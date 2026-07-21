@@ -3,533 +3,687 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Front Desk Portal — REX Insurance VMS</title>
+<title>Admin Portal — REX Insurance VMS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #FFFFFF; --surface: #F7F8FA; --surface-hover: #F0F2F5; --border: #E4E7EC;
-    --text-primary: #1C2333; --text-secondary: #5B6472; --text-tertiary: #8A93A3;
-    --accent: #B8792A; --accent-tint: #FBF1E4; --accent-hover: #9A631F;
-    --danger: #B3261E; --danger-bg: #FBEAE9; --success: #1E7B4D; --success-bg: #E7F5EC;
-    --hold: #6E7684; --hold-bg: #EEF0F3;
-    --font-display: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: var(--font-body); background: var(--bg); color: var(--text-primary); -webkit-font-smoothing: antialiased; min-height: 100vh; transition: background-color .3s, color .3s; }
-  body.theme-dark { --bg: #0B0D12; --surface: #15171E; --surface-hover: #1C1F28; --border: #262A35; --text-primary: #F2F4F8; --text-secondary: #A6ADBB; --text-tertiary: #6E7684; --accent-tint: #2E230F; --success-bg: #123324; --hold-bg: #1C1F28; }
-
-  .top-bar { display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; border-bottom: 1px solid var(--border); }
-  .top-left { display: flex; align-items: center; gap: 12px; }
-  .badge-icon { width: 34px; height: 34px; border-radius: 9px; background: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .badge-icon svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  .top-left .titles .company { font-family: var(--font-display); font-weight: 800; font-size: 14.5px; }
-  .top-left .titles .portal { font-size: 12.5px; color: var(--text-secondary); }
-  .top-right { display: flex; align-items: center; gap: 14px; }
-  #clock { font-size: 12.5px; color: var(--text-tertiary); font-variant-numeric: tabular-nums; }
-  .user-chip { font-size: 12.5px; color: var(--text-secondary); background: var(--surface); border: 1px solid var(--border); padding: 6px 12px; border-radius: 100px; }
-  .live-dot { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; color: var(--success); }
-  .live-dot .d { width: 6px; height: 6px; border-radius: 50%; background: var(--success); animation: pulse 1.6s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.3;} }
-  .logout-btn { font-size: 12.5px; font-weight: 600; color: var(--danger); background: var(--danger-bg); border: none; padding: 7px 12px; border-radius: 7px; cursor: pointer; }
-  .theme-toggle { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); display: flex; align-items: center; justify-content: center; cursor: pointer; }
-  .theme-toggle:hover { background: var(--surface-hover); }
-  .theme-toggle svg { width: 16px; height: 16px; fill: none; stroke: var(--text-primary); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-  .theme-toggle .icon-moon { display: none; }
-  body.theme-dark .theme-toggle .icon-sun { display: none; }
-  body.theme-dark .theme-toggle .icon-moon { display: block; }
-
-  .conn-banner { display: none; background: var(--accent); color: #fff; font-size: 12.5px; font-weight: 600; text-align: center; padding: 8px; }
-  .conn-banner.show { display: block; }
-
-  .app-shell { display: none; }
-  .app-shell.ready { display: block; }
-  .layout { max-width: 1180px; margin: 0 auto; padding: 28px 32px 60px; }
-
-  .stats-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px; }
-  .stat-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
-  .stat-box .num { font-family: var(--font-display); font-size: 22px; font-weight: 800; }
-  .stat-box .label { font-size: 11.5px; color: var(--text-tertiary); margin-top: 2px; }
-
-  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px 22px 8px; }
-  .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
-  .panel-header h2 { font-family: var(--font-display); font-size: 16px; font-weight: 700; }
-  .panel-header .sub { font-size: 12.5px; color: var(--text-tertiary); }
-  .header-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-  .filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
-  .filter-tab { font-size: 12.5px; font-weight: 600; color: var(--text-secondary); background: var(--bg); border: 1px solid var(--border); padding: 6px 12px; border-radius: 100px; cursor: pointer; }
-  .filter-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .search-row { position: relative; width: 220px; max-width: 100%; }
-  .search-row svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; stroke: var(--text-tertiary); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  .search-row input { width: 100%; padding: 9px 12px 9px 33px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text-primary); font-size: 13.5px; outline: none; }
-  .search-row input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-tint); }
-
-  table { width: 100%; border-collapse: collapse; }
-  thead th { text-align: left; font-size: 11.5px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: var(--text-tertiary); padding: 10px 12px; border-bottom: 1px solid var(--border); }
-  tbody td { padding: 13px 12px; font-size: 13.5px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-  tbody tr:last-child td { border-bottom: none; }
-  tbody tr.visit-row { cursor: pointer; }
-  tbody tr.visit-row:hover { background: var(--surface-hover); }
-  .visitor-name { font-weight: 700; }
-  .visitor-sub { font-size: 11.5px; color: var(--text-tertiary); margin-top: 2px; }
-  .appt-tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px; }
-  .appt-tag.scheduled { background: #E8F1F2; color: #0F4C5C; }
-  .appt-tag.walkin { background: var(--accent-tint); color: var(--accent); }
-  body.theme-dark .appt-tag.scheduled { background: #12262B; }
-  .status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 100px; white-space: nowrap; }
-  .status-pill .dot { width: 6px; height: 6px; border-radius: 50%; }
-  .status-pill.pending { background: var(--accent-tint); color: var(--accent); } .status-pill.pending .dot { background: var(--accent); }
-  .status-pill.hold { background: var(--hold-bg); color: var(--hold); } .status-pill.hold .dot { background: var(--hold); }
-  .status-pill.approved { background: #E8F1F2; color: #0F4C5C; } .status-pill.approved .dot { background: #0F4C5C; }
-  .status-pill.with-host { background: var(--success-bg); color: var(--success); } .status-pill.with-host .dot { background: var(--success); }
-  .status-pill.rejected { background: var(--danger-bg); color: var(--danger); } .status-pill.rejected .dot { background: var(--danger); }
-  .status-pill.checked-out { background: var(--hold-bg); color: var(--text-tertiary); } .status-pill.checked-out .dot { background: var(--text-tertiary); }
-  .empty-row td { text-align: center; padding: 48px 20px; color: var(--text-tertiary); font-size: 13.5px; }
-
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(10,12,16,.5); align-items: center; justify-content: center; z-index: 100; padding: 20px; overflow-y: auto; }
-  .modal-overlay.show { display: flex; }
-  .modal { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; width: 100%; max-width: 460px; padding: 24px; margin: auto; }
-  .modal-head { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
-  .modal-avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--accent-tint); color: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
-  .modal-head .name { font-family: var(--font-display); font-weight: 700; font-size: 16px; }
-  .modal-head .meta { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
-  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
-  .detail-item .label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: var(--text-tertiary); margin-bottom: 3px; }
-  .detail-item .value { font-size: 13.5px; font-weight: 600; }
-  .stage-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: var(--text-tertiary); margin-bottom: 10px; }
-  .action-btn { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; font-family: var(--font-body); margin-bottom: 8px; }
-  .action-btn:hover { background: var(--surface-hover); }
-  .action-btn .icon { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .action-btn .icon svg { width: 15px; height: 15px; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  .action-btn .t { font-weight: 700; font-size: 13.5px; } .action-btn .s { font-size: 11.5px; color: var(--text-tertiary); margin-top: 1px; }
-  .action-btn.accept .icon { background: var(--success-bg); } .action-btn.accept .icon svg { stroke: var(--success); }
-  .action-btn.reject .icon { background: var(--danger-bg); } .action-btn.reject .icon svg { stroke: var(--danger); }
-  .action-btn.hold .icon { background: var(--hold-bg); } .action-btn.hold .icon svg { stroke: var(--hold); }
-  .action-btn.available .icon { background: var(--success-bg); } .action-btn.available .icon svg { stroke: var(--success); }
-  .action-btn.unavailable .icon { background: var(--hold-bg); } .action-btn.unavailable .icon svg { stroke: var(--hold); }
-  .action-btn.checkout .icon { background: var(--accent-tint); } .action-btn.checkout .icon svg { stroke: var(--accent); }
-  .terminal-note { display: flex; align-items: center; gap: 10px; padding: 14px; border-radius: 10px; background: var(--surface); font-size: 13px; color: var(--text-secondary); }
-  .btn-secondary { background: var(--surface); border: 1px solid var(--border); color: var(--text-secondary); padding: 11px 16px; border-radius: 9px; font-size: 13.5px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 12px; }
-  .btn-secondary:hover { background: var(--surface-hover); }
-
-  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--accent); color: #fff; font-size: 13px; font-weight: 600; padding: 11px 18px; border-radius: 9px; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; display: flex; align-items: center; gap: 8px; z-index: 300; }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  .toast.error { background: var(--danger); }
-
-  .login-gate { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
-  .login-card { width: 100%; max-width: 380px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 32px 28px; }
-  .login-card .badge-icon { margin: 0 auto 18px; width: 46px; height: 46px; }
-  .login-card .badge-icon svg { width: 24px; height: 24px; }
-  .login-card h1 { font-family: var(--font-display); font-size: 18px; font-weight: 800; text-align: center; margin-bottom: 4px; }
-  .login-card .sub { font-size: 12.5px; color: var(--text-tertiary); text-align: center; margin-bottom: 24px; }
-  .login-error { font-size: 12.5px; color: var(--danger); background: var(--danger-bg); padding: 9px 12px; border-radius: 8px; margin-bottom: 14px; display: none; }
-  .login-error.show { display: block; }
-  .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-  .field label { font-size: 12.5px; font-weight: 600; color: var(--text-secondary); }
-  .field input { font-family: var(--font-body); font-size: 13.5px; padding: 9px 11px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text-primary); outline: none; width: 100%; }
-  .field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-tint); }
-  .btn-primary { flex: 1; background: var(--accent); color: #fff; border: none; padding: 11px 16px; border-radius: 9px; font-size: 13.5px; font-weight: 700; cursor: pointer; }
-  .btn-primary:hover { background: var(--accent-hover); }
-
-  .guide-fab { position: fixed; bottom: 24px; right: 24px; width: 52px; height: 52px; border-radius: 50%; background: var(--accent); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(0,0,0,.25); z-index: 150; }
-  .guide-fab svg { width: 24px; height: 24px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  .guide-panel { display: none; position: fixed; bottom: 88px; right: 24px; width: 340px; max-width: calc(100vw - 32px); max-height: 480px; background: var(--bg); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.2); z-index: 150; flex-direction: column; overflow: hidden; }
-  .guide-panel.show { display: flex; }
-  .guide-head { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-  .guide-head .t { font-family: var(--font-display); font-weight: 700; font-size: 13.5px; }
-  .guide-head .close-guide { background: none; border: none; color: var(--text-tertiary); cursor: pointer; font-size: 18px; line-height: 1; }
-  .guide-body { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
-  .guide-msg { font-size: 13px; line-height: 1.5; padding: 9px 12px; border-radius: 10px; max-width: 88%; }
-  .guide-msg.bot { background: var(--surface); align-self: flex-start; }
-  .guide-msg.user { background: var(--accent); color: #fff; align-self: flex-end; }
-  .guide-quick { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 12px; }
-  .guide-quick button { font-size: 11.5px; font-weight: 600; color: var(--accent); background: var(--accent-tint); border: none; padding: 6px 10px; border-radius: 100px; cursor: pointer; }
-  .guide-input-row { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--border); }
-  .guide-input-row input { flex: 1; font-size: 13px; padding: 9px 11px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text-primary); outline: none; }
-  .guide-input-row button { background: var(--accent); color: #fff; border: none; width: 36px; border-radius: 8px; cursor: pointer; flex-shrink: 0; }
-
-  @media (max-width: 900px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 720px) { .layout { padding: 20px; } thead th:nth-child(3), tbody td:nth-child(3) { display: none; } .search-row { width: 100%; } .detail-grid { grid-template-columns: 1fr; } }
+:root {
+  --bg: #FFFFFF; --surface: #F7F8FA; --surface-hover: #F0F2F5; --border: #E4E7EC;
+  --text-primary: #1C2333; --text-secondary: #5B6472; --text-tertiary: #8A93A3;
+  --accent: #6B4C6E; --accent-tint: #F1EAF2; --accent-hover: #573D59;
+  --danger: #B3261E; --danger-bg: #FBEAE9; --success: #1E7B4D; --success-bg: #E7F5EC;
+  --warn: #B8792A; --warn-bg: #FBF1E4;
+  --font-display: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: var(--font-body); background: var(--bg); color: var(--text-primary); -webkit-font-smoothing: antialiased; min-height: 100vh; transition: background-color .3s, color .3s; }
+body.theme-dark { --bg: #0B0D12; --surface: #15171E; --surface-hover: #1C1F28; --border: #262A35; --text-primary: #F2F4F8; --text-secondary: #A6ADBB; --text-tertiary: #6E7684; --accent-tint: #241A26; --success-bg: #123324; --warn-bg: #2E230F; }
+.top-bar { display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; border-bottom: 1px solid var(--border); }
+.top-left { display: flex; align-items: center; gap: 12px; }
+.badge-icon { width: 34px; height: 34px; border-radius: 9px; background: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.badge-icon svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.top-left .titles .company { font-family: var(--font-display); font-weight: 800; font-size: 14.5px; }
+.top-left .titles .portal { font-size: 12.5px; color: var(--text-secondary); }
+.top-right { display: flex; align-items: center; gap: 14px; }
+#clock { font-size: 12.5px; color: var(--text-tertiary); font-variant-numeric: tabular-nums; }
+.user-chip { font-size: 12.5px; color: var(--text-secondary); background: var(--surface); border: 1px solid var(--border); padding: 6px 12px; border-radius: 100px; }
+.logout-btn { font-size: 12.5px; font-weight: 600; color: var(--danger); background: var(--danger-bg); border: none; padding: 7px 12px; border-radius: 7px; cursor: pointer; }
+.theme-toggle { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.theme-toggle:hover { background: var(--surface-hover); }
+.theme-toggle svg { width: 16px; height: 16px; fill: none; stroke: var(--text-primary); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.theme-toggle .icon-moon { display: none; }
+body.theme-dark .theme-toggle .icon-sun { display: none; }
+body.theme-dark .theme-toggle .icon-moon { display: block; }
+.conn-banner { display: none; background: var(--accent); color: #fff; font-size: 12.5px; font-weight: 600; text-align: center; padding: 8px; }
+.conn-banner.show { display: block; }
+.app-shell { display: none; } .app-shell.ready { display: block; }
+.shell { display: flex; max-width: 1280px; margin: 0 auto; min-height: calc(100vh - 68px); }
+.sidebar { width: 220px; flex-shrink: 0; padding: 24px 14px; border-right: 1px solid var(--border); }
+.nav-item { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 10px 12px; border-radius: 9px; border: none; background: transparent; color: var(--text-secondary); font-size: 13.5px; font-weight: 600; cursor: pointer; margin-bottom: 4px; font-family: var(--font-body); }
+.nav-item svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.nav-item:hover { background: var(--surface-hover); color: var(--text-primary); }
+.nav-item.active { background: var(--accent-tint); color: var(--accent); }
+.content { flex: 1; padding: 28px 32px 60px; min-width: 0; }
+.view { display: none; } .view.active { display: block; }
+.view-title { font-family: var(--font-display); font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+.view-sub { font-size: 13px; color: var(--text-tertiary); margin-bottom: 22px; }
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 22px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
+.stat-card .num { font-family: var(--font-display); font-size: 24px; font-weight: 800; }
+.stat-card .label { font-size: 11.5px; color: var(--text-tertiary); margin-top: 3px; }
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px 22px 8px; margin-bottom: 20px; }
+.panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+.panel-header h2 { font-family: var(--font-display); font-size: 15.5px; font-weight: 700; }
+.panel-header .sub { font-size: 12.5px; color: var(--text-tertiary); }
+.two-col { display: grid; grid-template-columns: 1.3fr 1fr; gap: 20px; }
+.header-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.search-row { position: relative; width: 260px; max-width: 100%; }
+.search-row svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; stroke: var(--text-tertiary); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.search-row input { width: 100%; padding: 9px 12px 9px 33px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text-primary); font-size: 13.5px; outline: none; }
+.search-row input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-tint); }
+table { width: 100%; border-collapse: collapse; }
+thead th { text-align: left; font-size: 11.5px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: var(--text-tertiary); padding: 10px 12px; border-bottom: 1px solid var(--border); }
+tbody td { padding: 12px; font-size: 13.5px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: var(--surface-hover); }
+.name-cell { font-weight: 700; } .sub-cell { font-size: 11.5px; color: var(--text-tertiary); margin-top: 2px; }
+.role-pill, .status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 100px; white-space: nowrap; }
+.role-pill.security { background: #E8F1F2; color: #0F4C5C; } body.theme-dark .role-pill.security { background: #12262B; }
+.role-pill.frontdesk { background: var(--warn-bg); color: var(--warn); }
+.role-pill.admin { background: var(--accent-tint); color: var(--accent); }
+.status-pill.active { background: var(--success-bg); color: var(--success); }
+.status-pill.suspended { background: var(--danger-bg); color: var(--danger); }
+.status-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.row-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.icon-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 600; color: var(--accent); background: var(--accent-tint); border: none; padding: 7px 12px; border-radius: 7px; cursor: pointer; }
+.icon-btn:hover { filter: brightness(.96); } body.theme-dark .icon-btn:hover { filter: brightness(1.15); }
+.icon-btn.suspend { color: var(--danger); background: var(--danger-bg); }
+.icon-btn.activate { color: var(--success); background: var(--success-bg); }
+.btn-add { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: #fff; background: var(--accent); border: none; padding: 9px 14px; border-radius: 8px; cursor: pointer; white-space: nowrap; }
+.btn-add:hover { background: var(--accent-hover); }
+.btn-add svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.empty-row td { text-align: center; padding: 40px 20px; color: var(--text-tertiary); font-size: 13.5px; }
+.visit-status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 100px; white-space: nowrap; }
+.visit-status-pill.checked-out { background: var(--success-bg); color: var(--success); }
+.visit-status-pill.rejected { background: var(--danger-bg); color: var(--danger); }
+.visit-status-pill.with-host, .visit-status-pill.approved, .visit-status-pill.pending, .visit-status-pill.hold { background: #E8F1F2; color: #0F4C5C; }
+body.theme-dark .visit-status-pill.with-host, body.theme-dark .visit-status-pill.approved, body.theme-dark .visit-status-pill.pending, body.theme-dark .visit-status-pill.hold { background: #12262B; }
+.visit-status-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.bar-row .bar-label { width: 110px; font-size: 12.5px; font-weight: 600; flex-shrink: 0; }
+.bar-track { flex: 1; background: var(--bg); border-radius: 100px; height: 8px; overflow: hidden; }
+.bar-fill { height: 100%; background: var(--accent); border-radius: 100px; }
+.bar-row .bar-num { width: 28px; text-align: right; font-size: 12px; font-weight: 700; color: var(--text-tertiary); flex-shrink: 0; }
+.report-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.report-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; display: flex; align-items: flex-start; gap: 14px; }
+.report-card .r-icon { width: 38px; height: 38px; border-radius: 9px; background: var(--accent-tint); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.report-card .r-icon svg { width: 18px; height: 18px; stroke: var(--accent); fill: none; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.report-card .r-title { font-weight: 700; font-size: 13.5px; margin-bottom: 3px; }
+.report-card .r-sub { font-size: 12px; color: var(--text-tertiary); margin-bottom: 12px; }
+.report-actions { display: flex; gap: 8px; }
+.btn-tiny { font-size: 12px; font-weight: 700; padding: 6px 11px; border-radius: 7px; cursor: pointer; border: 1px solid var(--border); background: var(--bg); color: var(--text-secondary); }
+.btn-tiny:hover { background: var(--surface-hover); }
+.btn-tiny.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn-tiny.primary:hover { background: var(--accent-hover); }
+.logs-count-chip { font-size: 12px; font-weight: 600; color: var(--accent); background: var(--accent-tint); padding: 4px 10px; border-radius: 100px; white-space: nowrap; }
+.load-more-row { text-align: center; padding: 18px 0; }
+.btn-load-more { font-size: 13px; font-weight: 700; color: var(--accent); background: var(--accent-tint); border: none; padding: 10px 22px; border-radius: 9px; cursor: pointer; }
+.btn-load-more:hover { filter: brightness(.96); } body.theme-dark .btn-load-more:hover { filter: brightness(1.15); }
+.logs-fully-loaded { text-align: center; padding: 16px 0; font-size: 12.5px; color: var(--text-tertiary); }
+.session-card { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; background: var(--bg); }
+.session-card .s-name { font-weight: 700; font-size: 13.5px; }
+.session-card .s-meta { font-size: 11.5px; color: var(--text-tertiary); margin-top: 2px; }
+.concurrency-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.concurrency-row:last-child { border-bottom: none; }
+.concurrency-row .c-portal { font-weight: 700; font-size: 13.5px; text-transform: capitalize; }
+.stepper { display: flex; align-items: center; gap: 10px; }
+.stepper button { width: 28px; height: 28px; border-radius: 7px; border: 1px solid var(--border); background: var(--bg); cursor: pointer; font-weight: 700; color: var(--text-primary); }
+.stepper button:hover { background: var(--surface-hover); }
+.stepper .val { font-weight: 700; font-size: 14px; min-width: 16px; text-align: center; }
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(10,12,16,.5); align-items: center; justify-content: center; z-index: 100; padding: 20px; overflow-y: auto; }
+.modal-overlay.show { display: flex; }
+.modal { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; width: 100%; max-width: 440px; padding: 24px; margin: auto; }
+.modal h3 { font-family: var(--font-display); font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.modal .modal-sub { font-size: 12.5px; color: var(--text-tertiary); margin-bottom: 18px; }
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.field label { font-size: 12.5px; font-weight: 600; color: var(--text-secondary); }
+.field input, .field select { font-family: var(--font-body); font-size: 13.5px; padding: 9px 11px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text-primary); outline: none; }
+.field input:focus, .field select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-tint); }
+.field input.invalid { border-color: var(--danger); box-shadow: 0 0 0 3px var(--danger-bg); }
+.field .error-text { font-size: 11.5px; color: var(--danger); display: none; margin-top: 2px; }
+.field.error .error-text { display: block; }
+.modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+.btn-primary { flex: 1; background: var(--accent); color: #fff; border: none; padding: 11px 16px; border-radius: 9px; font-size: 13.5px; font-weight: 700; cursor: pointer; }
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-secondary { background: var(--surface); border: 1px solid var(--border); color: var(--text-secondary); padding: 11px 16px; border-radius: 9px; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+.btn-secondary:hover { background: var(--surface-hover); }
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--accent); color: #fff; font-size: 13px; font-weight: 600; padding: 11px 18px; border-radius: 9px; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; display: flex; align-items: center; gap: 8px; z-index: 300; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.error { background: var(--danger); }
+.login-gate { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+.login-card { width: 100%; max-width: 380px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 32px 28px; }
+.login-card .badge-icon { margin: 0 auto 18px; width: 46px; height: 46px; }
+.login-card .badge-icon svg { width: 24px; height: 24px; }
+.login-card h1 { font-family: var(--font-display); font-size: 18px; font-weight: 800; text-align: center; margin-bottom: 4px; }
+.login-card .sub { font-size: 12.5px; color: var(--text-tertiary); text-align: center; margin-bottom: 24px; }
+.login-error { font-size: 12.5px; color: var(--danger); background: var(--danger-bg); padding: 9px 12px; border-radius: 8px; margin-bottom: 14px; display: none; }
+.login-error.show { display: block; }
+.guide-fab { position: fixed; bottom: 24px; right: 24px; width: 52px; height: 52px; border-radius: 50%; background: var(--accent); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(0,0,0,.25); z-index: 150; }
+.guide-fab svg { width: 24px; height: 24px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.guide-panel { display: none; position: fixed; bottom: 88px; right: 24px; width: 340px; max-width: calc(100vw - 32px); max-height: 480px; background: var(--bg); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.2); z-index: 150; flex-direction: column; overflow: hidden; }
+.guide-panel.show { display: flex; }
+.guide-head { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.guide-head .t { font-family: var(--font-display); font-weight: 700; font-size: 13.5px; }
+.guide-head .close-guide { background: none; border: none; color: var(--text-tertiary); cursor: pointer; font-size: 18px; line-height: 1; }
+.guide-body { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+.guide-msg { font-size: 13px; line-height: 1.5; padding: 9px 12px; border-radius: 10px; max-width: 88%; }
+.guide-msg.bot { background: var(--surface); align-self: flex-start; }
+.guide-msg.user { background: var(--accent); color: #fff; align-self: flex-end; }
+.guide-quick { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 12px; }
+.guide-quick button { font-size: 11.5px; font-weight: 600; color: var(--accent); background: var(--accent-tint); border: none; padding: 6px 10px; border-radius: 100px; cursor: pointer; }
+.guide-input-row { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--border); }
+.guide-input-row input { flex: 1; font-size: 13px; padding: 9px 11px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text-primary); outline: none; }
+.guide-input-row button { background: var(--accent); color: #fff; border: none; width: 36px; border-radius: 8px; cursor: pointer; flex-shrink: 0; }
+@media (max-width: 980px) { .stats-row { grid-template-columns: repeat(2, 1fr); } .two-col { grid-template-columns: 1fr; } .report-grid { grid-template-columns: 1fr; } }
+@media (max-width: 760px) { .shell { flex-direction: column; } .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border); display: flex; overflow-x: auto; padding: 12px; gap: 6px; } .nav-item { white-space: nowrap; margin-bottom: 0; } .content { padding: 20px; } .search-row { width: 100%; } }
 </style>
 </head>
 <body class="theme-dark">
-
-  <!-- ===================== LOGIN GATE ===================== -->
-  <div class="login-gate" id="loginGate">
-    <div class="login-card">
-      <div class="badge-icon"><svg viewBox="0 0 24 24"><path d="M3 20h18"/><path d="M4 17a8 8 0 0 1 16 0"/><path d="M12 4v5"/><circle cx="12" cy="2.5" r="1"/></svg></div>
-      <h1>Front Desk Portal</h1>
-      <div class="sub">REX Insurance · Enter the front desk passcode to continue</div>
-      <div class="login-error" id="loginError"></div>
-      <div class="field"><label>Your name</label><input type="text" id="loginName" placeholder="e.g. Blessing Adeyemi"></div>
-      <div class="field"><label>Passcode</label><input type="password" id="loginPasscode" placeholder="Enter passcode"></div>
-      <button class="btn-primary" id="loginBtn" style="width:100%;">Log In</button>
-    </div>
-  </div>
-
-  <!-- ===================== APP SHELL ===================== -->
-  <div class="app-shell" id="appShell">
-    <div class="conn-banner" id="connBanner">Connecting to server — this can take up to a minute on first load...</div>
-
-    <div class="top-bar">
-      <div class="top-left">
-        <div class="badge-icon"><svg viewBox="0 0 24 24"><path d="M3 20h18"/><path d="M4 17a8 8 0 0 1 16 0"/><path d="M12 4v5"/><circle cx="12" cy="2.5" r="1"/></svg></div>
-        <div class="titles"><div class="company">REX Insurance</div><div class="portal">Front Desk Portal</div></div>
-      </div>
-      <div class="top-right">
-        <span class="live-dot"><span class="d"></span>Live</span>
-        <span class="user-chip" id="userChip"></span>
-        <div id="clock"></div>
-        <button class="logout-btn" id="logoutBtn">Log Out</button>
-      </div>
-    </div>
-
-    <div class="layout">
-      <div class="stats-row">
-        <div class="stat-box"><div class="num" id="statPending">0</div><div class="label">Pending review</div></div>
-        <div class="stat-box"><div class="num" id="statHold">0</div><div class="label">On hold / waiting</div></div>
-        <div class="stat-box"><div class="num" id="statApproved">0</div><div class="label">Approved</div></div>
-        <div class="stat-box"><div class="num" id="statWithHost">0</div><div class="label">With host</div></div>
-        <div class="stat-box"><div class="num" id="statRejected">0</div><div class="label">Rejected</div></div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-header">
-          <div><h2>Visitor Status Board</h2><span class="sub">Live status of every visitor sent over from Security today</span></div>
-          <div class="header-actions">
-            <div class="filter-tabs" id="filterTabs">
-              <button class="filter-tab active" data-filter="all">All</button>
-              <button class="filter-tab" data-filter="pending">Pending</button>
-              <button class="filter-tab" data-filter="hold">Hold</button>
-              <button class="filter-tab" data-filter="approved">Approved</button>
-              <button class="filter-tab" data-filter="with-host">With Host</button>
-              <button class="filter-tab" data-filter="rejected">Rejected</button>
-              <button class="filter-tab" data-filter="checked-out">Checked Out</button>
-            </div>
-            <div class="search-row"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><input type="text" id="searchInput" placeholder="Search visitor or host..."></div>
-          </div>
-        </div>
-        <table>
-          <thead><tr><th>Visitor</th><th>Host</th><th>Appointment</th><th>Check-in</th><th>Status</th></tr></thead>
-          <tbody id="tableBody"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== Action Modal ===== -->
-  <div class="modal-overlay" id="modalOverlay">
-    <div class="modal">
-      <div class="modal-head">
-        <div class="modal-avatar" id="mAvatar"></div>
-        <div><div class="name" id="mName"></div><div class="meta" id="mMeta"></div></div>
-      </div>
-      <div class="detail-grid">
-        <div class="detail-item"><div class="label">Department</div><div class="value" id="mDept"></div></div>
-        <div class="detail-item"><div class="label">Host</div><div class="value" id="mHost"></div></div>
-        <div class="detail-item"><div class="label">Purpose</div><div class="value" id="mPurpose"></div></div>
-        <div class="detail-item"><div class="label">Check-in</div><div class="value" id="mCheckin"></div></div>
-      </div>
-      <div id="mActionArea"></div>
-      <button class="btn-secondary" id="closeModal">Close</button>
-    </div>
-  </div>
-
-  <!-- ===== AI Guide ===== -->
-  <button class="guide-fab" id="guideFab" aria-label="Open help guide"><svg viewBox="0 0 24 24"><path d="M12 18h.01M9.09 9a3 3 0 1 1 5.83 1c0 2-3 2-3 4"/><circle cx="12" cy="12" r="9"/></svg></button>
-  <div class="guide-panel" id="guidePanel">
-    <div class="guide-head"><span class="t">Front Desk Portal Guide</span><button class="close-guide" id="closeGuide">&times;</button></div>
-    <div class="guide-body" id="guideBody"><div class="guide-msg bot">Hi! Ask me how to approve, hold, or check out a visitor on the status board.</div></div>
-    <div class="guide-quick" id="guideQuick">
-      <button data-q="How do I approve a visitor?">Approve a visitor</button>
-      <button data-q="What does the Hold status mean?">What is Hold?</button>
-      <button data-q="How do I check out a visitor?">Check out a visitor</button>
-    </div>
-    <div class="guide-input-row">
-      <input type="text" id="guideInput" placeholder="Ask a question...">
-      <button id="guideSend"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
-    </div>
-  </div>
-
-  <div class="toast" id="toast"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg><span id="toastText"></span></div>
-
+<!-- ===================== LOGIN GATE ===================== -->
+<div class="login-gate" id="loginGate">
+<div class="login-card">
+<div class="badge-icon"><svg viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></div>
+<h1>Admin Portal</h1>
+<div class="sub">REX Insurance · Enter the admin passcode to continue</div>
+<div class="login-error" id="loginError"></div>
+<div class="field"><label>Your name</label><input type="text" id="loginName" placeholder="e.g. Ibrahim Musa"></div>
+<div class="field"><label>Passcode</label><input type="password" id="loginPasscode" placeholder="Enter passcode"></div>
+<button class="btn-primary" id="loginBtn" style="width:100%;">Log In</button>
+</div>
+</div>
+<!-- ===================== APP SHELL ===================== -->
+<div class="app-shell" id="appShell">
+<div class="conn-banner" id="connBanner">Connecting to server — this can take up to a minute on first load...</div>
+<div class="top-bar">
+<div class="top-left">
+<div class="badge-icon"><svg viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></div>
+<div class="titles"><div class="company">REX Insurance</div><div class="portal">Admin Portal</div></div>
+</div>
+<div class="top-right">
+<span class="user-chip" id="userChip"></span>
+<div id="clock"></div>
+<button class="logout-btn" id="logoutBtn">Log Out</button>
+</div>
+</div>
+<div class="shell">
+<div class="sidebar">
+<button class="nav-item active" data-view="dashboard"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Dashboard</button>
+<button class="nav-item" data-view="users"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Users & Roles</button>
+<button class="nav-item" data-view="logs"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>Visitor Logs</button>
+<button class="nav-item" data-view="sessions"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Session Control</button>
+<button class="nav-item" data-view="reports"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15v3M12 11v7M17 7v11"/></svg>Reports</button>
+</div>
+<div class="content">
+<!-- ===== DASHBOARD ===== -->
+<div class="view active" id="view-dashboard">
+<div class="view-title">Dashboard</div>
+<div class="view-sub">Live overview of visitor activity and system performance</div>
+<div class="stats-row">
+<div class="stat-card"><div class="num" id="statToday">0</div><div class="label">Visitors today</div></div>
+<div class="stat-card"><div class="num" id="statInside">0</div><div class="label">Currently inside</div></div>
+<div class="stat-card"><div class="num" id="statPending">0</div><div class="label">Pending approvals</div></div>
+<div class="stat-card"><div class="num" id="statMonth">0</div><div class="label">Visitors this month</div></div>
+</div>
+<div class="two-col">
+<div class="panel"><div class="panel-header"><div><h2>Staff Performance</h2><span class="sub">Visits handled this week, by host</span></div></div><div id="perfChart"></div></div>
+<div class="panel"><div class="panel-header"><div><h2>Recent Activity</h2><span class="sub">Latest system events</span></div></div><div id="activityFeed" style="padding-bottom:16px;"></div></div>
+</div>
+</div>
+<!-- ===== USERS & ROLES ===== -->
+<div class="view" id="view-users">
+<div class="view-title">Users & Roles</div>
+<div class="view-sub">Staff directory — a record only, not connected to portal login</div>
+<div class="panel">
+<div class="panel-header"><div><h2>Staff Roster</h2><span class="sub" id="usersCount">0 members</span></div>
+<button class="btn-add" id="addUserBtn"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add Staff Member</button>
+</div>
+<table><thead><tr><th>Name</th><th>Role</th><th>Status</th><th></th></tr></thead><tbody id="usersTableBody"></tbody></table>
+</div>
+</div>
+<!-- ===== VISITOR LOGS ===== -->
+<div class="view" id="view-logs">
+<div class="view-title">Visitor Logs</div>
+<div class="view-sub">Complete historical record of every visit ever logged in the system</div>
+<div class="panel">
+<div class="panel-header">
+<div><h2>All Visits</h2><span class="sub">Loaded in batches — search applies across the full history</span></div>
+<div class="header-actions">
+<span class="logs-count-chip" id="logsCountChip">0 of 0 loaded</span>
+<div class="search-row"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><input type="text" id="logsSearch" placeholder="Search visitor, host, or department..."></div>
+</div>
+</div>
+<table><thead><tr><th>Visitor</th><th>Department</th><th>Host</th><th>Check-in</th><th>Check-out</th><th>Status</th></tr></thead><tbody id="logsTableBody"></tbody></table>
+<div id="logsFooter"></div>
+</div>
+</div>
+<!-- ===== SESSION CONTROL ===== -->
+<div class="view" id="view-sessions">
+<div class="view-title">Session Control</div>
+<div class="view-sub">Manage who's logged in, passcodes, and concurrency limits per portal</div>
+<div class="panel">
+<div class="panel-header"><div><h2>Active Sessions</h2><span class="sub" id="sessionsCount">0 active</span></div></div>
+<div id="sessionsList"></div>
+</div>
+<div class="panel">
+<div class="panel-header"><div><h2>Concurrency Limits</h2><span class="sub">Maximum simultaneous logins per portal (cap: 2)</span></div></div>
+<div id="concurrencyList"></div>
+</div>
+<div class="panel">
+<div class="panel-header"><div><h2>Passcodes</h2><span class="sub">Change the login passcode for any portal</span></div></div>
+<div id="passcodeList"></div>
+</div>
+<div class="panel">
+<div class="panel-header"><div><h2>Login History</h2><span class="sub">Most recent 50 logins</span></div></div>
+<table><thead><tr><th>Name</th><th>Portal</th><th>Logged in</th><th>Logged out</th></tr></thead><tbody id="historyTableBody"></tbody></table>
+</div>
+</div>
+<!-- ===== REPORTS ===== -->
+<div class="view" id="view-reports">
+<div class="view-title">Reports</div>
+<div class="view-sub">Export visitor logs and analytics for compliance and record-keeping</div>
+<div class="report-grid">
+<div class="report-card"><div class="r-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div><div><div class="r-title">Daily Visitor Log</div><div class="r-sub">All check-ins and check-outs for today</div><div class="report-actions"><button class="btn-tiny primary" data-report="Daily Visitor Log" data-format="PDF">Export PDF</button><button class="btn-tiny" data-report="Daily Visitor Log" data-format="Excel">Export Excel</button></div></div></div>
+<div class="report-card"><div class="r-icon"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15v3M12 11v7M17 7v11"/></svg></div><div><div class="r-title">Monthly Visitor Count</div><div class="r-sub">Total visits broken down by month</div><div class="report-actions"><button class="btn-tiny primary" data-report="Monthly Visitor Count" data-format="PDF">Export PDF</button><button class="btn-tiny" data-report="Monthly Visitor Count" data-format="Excel">Export Excel</button></div></div></div>
+<div class="report-card"><div class="r-icon"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div><div class="r-title">Staff Visit Frequency</div><div class="r-sub">Which hosts receive the most visitors</div><div class="report-actions"><button class="btn-tiny primary" data-report="Staff Visit Frequency" data-format="PDF">Export PDF</button><button class="btn-tiny" data-report="Staff Visit Frequency" data-format="Excel">Export Excel</button></div></div></div>
+<div class="report-card"><div class="r-icon"><svg viewBox="0 0 24 24"><path d="M9 12 11 14 15 10"/><circle cx="12" cy="12" r="9"/></svg></div><div><div class="r-title">Security & Front Desk Performance</div><div class="r-sub">Registration speed and approval turnaround</div><div class="report-actions"><button class="btn-tiny primary" data-report="Security & Front Desk Performance" data-format="PDF">Export PDF</button><button class="btn-tiny" data-report="Security & Front Desk Performance" data-format="Excel">Export Excel</button></div></div></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- ===== Add Staff Modal ===== -->
+<div class="modal-overlay" id="userModalOverlay">
+<div class="modal">
+<h3>Add Staff Member</h3>
+<div class="modal-sub">Add to the staff roster directory.</div>
+<div class="field"><label>Full name</label><input type="text" id="userName"><span class="error-text">Name is required.</span></div>
+<div class="field"><label>Role</label><select id="userRole"><option value="security">Security Officer</option><option value="frontdesk">Front Desk Officer</option><option value="admin">Admin</option></select></div>
+<div class="modal-actions"><button class="btn-secondary" id="cancelUser">Cancel</button><button class="btn-primary" id="saveUser">Save</button></div>
+</div>
+</div>
+<!-- ===== Change Passcode Modal ===== -->
+<div class="modal-overlay" id="passcodeModalOverlay">
+<div class="modal">
+<h3 id="passcodeModalTitle">Change Passcode</h3>
+<div class="modal-sub">This immediately changes login access for that portal.</div>
+<div class="field"><label>New passcode</label><input type="text" id="newPasscodeInput" placeholder="At least 4 characters"><span class="error-text">Passcode must be at least 4 characters.</span></div>
+<div class="modal-actions"><button class="btn-secondary" id="cancelPasscode">Cancel</button><button class="btn-primary" id="savePasscode">Update Passcode</button></div>
+</div>
+</div>
+<!-- ===== AI Guide ===== -->
+<button class="guide-fab" id="guideFab" aria-label="Open help guide"><svg viewBox="0 0 24 24"><path d="M12 18h.01M9.09 9a3 3 0 1 1 5.83 1c0 2-3 2-3 4"/><circle cx="12" cy="12" r="9"/></svg></button>
+<div class="guide-panel" id="guidePanel">
+<div class="guide-head"><span class="t">Admin Portal Guide</span><button class="close-guide" id="closeGuide">&times;</button></div>
+<div class="guide-body" id="guideBody"><div class="guide-msg bot">Hi! Ask me about managing users, checking the dashboard, session control, or reports.</div></div>
+<div class="guide-quick" id="guideQuick">
+<button data-q="How do I force-logout a stuck session?">Force-logout a session</button>
+<button data-q="How do I change a portal's passcode?">Change a passcode</button>
+<button data-q="How do the visitor logs work?">Visitor logs</button>
+</div>
+<div class="guide-input-row"><input type="text" id="guideInput" placeholder="Ask a question..."><button id="guideSend"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button></div>
+</div>
+<div class="toast" id="toast"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg><span id="toastText"></span></div>
 <script>
-  // ============================================================
-  // CONFIG
-  // ============================================================
-  const API_BASE = "https://rex-vms-backend.onrender.com/api";
-  const PORTAL = "frontdesk";
-  const TOKEN_KEY = "rex_vms_token_frontdesk";
-  const NAME_KEY = "rex_vms_name_frontdesk";
+const API_BASE = "https://rex-vms-backend.onrender.com/api";
+const PORTAL = "admin";
+const TOKEN_KEY = "rex_vms_token_admin";
+const NAME_KEY = "rex_vms_name_admin";
+const CEILING = 2;
+let authToken = localStorage.getItem(TOKEN_KEY);
+let userName = localStorage.getItem(NAME_KEY);
 
-  let authToken = localStorage.getItem(TOKEN_KEY);
-  let userName = localStorage.getItem(NAME_KEY);
-  let visits = [];
-  let activeFilter = "all";
-  let activeVisitId = null;
+async function api(path, options = {}) {
+  const res = await fetch(`${API_BASE}${path}`, { ...options, headers: { "Content-Type": "application/json", ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}), ...(options.headers || {}) } });
+  if (res.status === 401) { clearSession(); showLoginGate(); throw new Error("Session expired. Please log in again."); }
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || "Something went wrong.");
+  return data;
+}
+function clearSession() { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(NAME_KEY); authToken = null; userName = null; stopSessionsPolling(); }
+function showLoginGate() { document.getElementById("loginGate").style.display = "flex"; document.getElementById("appShell").classList.remove("ready"); }
+function showAppShell() { document.getElementById("loginGate").style.display = "none"; document.getElementById("appShell").classList.add("ready"); document.getElementById("userChip").textContent = userName; initPortal(); }
 
-  async function api(path, options = {}) {
-    const res = await fetch(`${API_BASE}${path}`, {
-      ...options,
-      headers: { "Content-Type": "application/json", ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}), ...(options.headers || {}) }
+async function warmUp() {
+  const banner = document.getElementById("connBanner");
+  banner.classList.add("show");
+  try { await fetch(`${API_BASE}/ping`); } catch (e) {}
+  banner.classList.remove("show");
+}
+
+(async function boot() {
+  warmUp();
+  if (authToken) {
+    try { const v = await api("/auth/verify"); if (v.valid && v.portal === PORTAL) { userName = v.name; showAppShell(); return; } } catch (e) {}
+  }
+  showLoginGate();
+})();
+
+document.getElementById("loginBtn").addEventListener("click", async () => {
+  const name = document.getElementById("loginName").value.trim();
+  const passcode = document.getElementById("loginPasscode").value;
+  const errBox = document.getElementById("loginError");
+  errBox.classList.remove("show");
+  if (!name || !passcode) { errBox.textContent = "Enter your name and the passcode."; errBox.classList.add("show"); return; }
+  try {
+    const res = await fetch(`${API_BASE}/auth/login`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ portal: PORTAL, passcode, name }) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Login failed.");
+    authToken = data.token; userName = data.name;
+    localStorage.setItem(TOKEN_KEY, authToken); localStorage.setItem(NAME_KEY, userName);
+    showAppShell();
+  } catch (e) { errBox.textContent = e.message; errBox.classList.add("show"); }
+});
+
+document.getElementById("logoutBtn").addEventListener("click", async () => {
+  try { await api("/auth/logout", { method: "POST" }); } catch (e) {}
+  clearSession(); showLoginGate();
+});
+
+function updateClock() { document.getElementById("clock").textContent = new Date().toLocaleString("en-US", { weekday: "short", hour: "2-digit", minute: "2-digit", second: "2-digit" }); }
+updateClock(); setInterval(updateClock, 1000);
+
+function initPortal() {
+  document.querySelectorAll(".nav-item").forEach(item => {
+    item.addEventListener("click", () => {
+      document.querySelectorAll(".nav-item").forEach(i => i.classList.remove("active"));
+      document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+      item.classList.add("active");
+      document.getElementById("view-" + item.dataset.view).classList.add("active");
     });
-    if (res.status === 401) { clearSession(); showLoginGate(); throw new Error("Session expired. Please log in again."); }
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || "Something went wrong.");
-    return data;
-  }
-
-  function clearSession() { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(NAME_KEY); authToken = null; userName = null; stopPolling(); }
-  function showLoginGate() { document.getElementById("loginGate").style.display = "flex"; document.getElementById("appShell").classList.remove("ready"); }
-  function showAppShell() { document.getElementById("loginGate").style.display = "none"; document.getElementById("appShell").classList.add("ready"); document.getElementById("userChip").textContent = userName; initPortal(); }
-
-  async function warmUp() {
-    const banner = document.getElementById("connBanner");
-    banner.classList.add("show");
-    try { await fetch(`${API_BASE}/ping`); } catch (e) {}
-    banner.classList.remove("show");
-  }
-
-  (async function boot() {
-    warmUp();
-    if (authToken) {
-      try {
-        const v = await api("/auth/verify");
-        if (v.valid && v.portal === PORTAL) { userName = v.name; showAppShell(); return; }
-      } catch (e) {}
-    }
-    showLoginGate();
-  })();
-
-  document.getElementById("loginBtn").addEventListener("click", async () => {
-    const name = document.getElementById("loginName").value.trim();
-    const passcode = document.getElementById("loginPasscode").value;
-    const errBox = document.getElementById("loginError");
-    errBox.classList.remove("show");
-    if (!name || !passcode) { errBox.textContent = "Enter your name and the passcode."; errBox.classList.add("show"); return; }
-    try {
-      const res = await fetch(`${API_BASE}/auth/login`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ portal: PORTAL, passcode, name }) });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Login failed.");
-      authToken = data.token; userName = data.name;
-      localStorage.setItem(TOKEN_KEY, authToken); localStorage.setItem(NAME_KEY, userName);
-      showAppShell();
-    } catch (e) { errBox.textContent = e.message; errBox.classList.add("show"); }
   });
-
-  document.getElementById("logoutBtn").addEventListener("click", async () => {
-    try { await api("/auth/logout", { method: "POST" }); } catch (e) {}
-    clearSession(); showLoginGate();
+  loadDashboard();
+  loadRoster();
+  loadLogs(true);
+  loadSessions(true);
+  loadConcurrency();
+  loadPasscodes();
+  loadHistory();
+  startSessionsPolling();
+  document.getElementById("addUserBtn").addEventListener("click", () => {
+    document.getElementById("userName").value = "";
+    document.getElementById("userRole").value = "security";
+    clearFieldError("userName");
+    document.getElementById("userModalOverlay").classList.add("show");
   });
+  document.getElementById("cancelUser").addEventListener("click", () => document.getElementById("userModalOverlay").classList.remove("show"));
+  document.getElementById("saveUser").addEventListener("click", saveUser);
+  document.getElementById("logsSearch").addEventListener("input", () => loadLogs(true));
+  document.getElementById("cancelPasscode").addEventListener("click", () => document.getElementById("passcodeModalOverlay").classList.remove("show"));
+  document.getElementById("savePasscode").addEventListener("click", savePasscodeChange);
+  document.querySelectorAll("[data-report]").forEach(btn => {
+    btn.addEventListener("click", () => showToast(`${btn.dataset.report} exported as ${btn.dataset.format} (demo only — real export not wired up yet).`));
+  });
+  initGuide();
+}
 
-  function updateClock() { document.getElementById("clock").textContent = new Date().toLocaleString("en-US", { weekday: "short", hour: "2-digit", minute: "2-digit", second: "2-digit" }); }
-  updateClock(); setInterval(updateClock, 1000);
+function clearFieldError(id) { document.getElementById(id).classList.remove("invalid"); document.getElementById(id).closest(".field").classList.remove("error"); }
+function markInvalid(id) { document.getElementById(id).classList.add("invalid"); document.getElementById(id).closest(".field").classList.add("error"); }
 
-  function initials(name) { return name.split(" ").map(p => p[0]).join("").slice(0, 2).toUpperCase(); }
-  function formatTime(str) { const d = new Date(str); return d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }); }
-  const statusMeta = { pending: "Pending Review", hold: "On Hold", approved: "Approved", "with-host": "With Host", rejected: "Rejected", "checked-out": "Checked Out" };
+// ===== Dashboard =====
+async function loadDashboard() {
+  try {
+    const s = await api("/admin/stats");
+    document.getElementById("statToday").textContent = s.visitorsToday;
+    document.getElementById("statInside").textContent = s.currentlyInside;
+    document.getElementById("statPending").textContent = s.pendingApprovals;
+    document.getElementById("statMonth").textContent = s.visitorsThisMonth;
+    const max = Math.max(1, ...s.staffPerformance.map(p => p.visits));
+    document.getElementById("perfChart").innerHTML = s.staffPerformance.map(p => `
+      <div class="bar-row"><div class="bar-label">${p.host}</div><div class="bar-track"><div class="bar-fill" style="width:${(p.visits / max * 100).toFixed(0)}%"></div></div><div class="bar-num">${p.visits}</div></div>
+    `).join("") || `<div style="font-size:13px;color:var(--text-tertiary);">No visit data yet this week.</div>`;
+    document.getElementById("activityFeed").innerHTML = s.recentActivity.map(a => `
+      <div style="padding:10px 0; border-bottom:1px solid var(--border); font-size:13px;">
+        <div>${a.visitor_name} — ${a.status.replace("-"," ")} (host: ${a.host})</div>
+        <div style="font-size:11px; color:var(--text-tertiary); margin-top:2px;">${new Date(a.created_at).toLocaleString("en-US",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})}</div>
+      </div>
+    `).join("") || `<div style="font-size:13px;color:var(--text-tertiary);">No activity yet.</div>`;
+  } catch (e) { showToast(e.message, true); }
+}
 
-  function initPortal() {
-    document.getElementById("searchInput").addEventListener("input", renderTable);
-    document.querySelectorAll(".filter-tab").forEach(tab => {
-      tab.addEventListener("click", () => {
-        document.querySelectorAll(".filter-tab").forEach(t => t.classList.remove("active"));
-        tab.classList.add("active");
-        activeFilter = tab.dataset.filter;
-        renderTable();
-      });
-    });
-    document.getElementById("closeModal").addEventListener("click", () => document.getElementById("modalOverlay").classList.remove("show"));
-    document.getElementById("modalOverlay").addEventListener("click", (e) => { if (e.target.id === "modalOverlay") e.target.classList.remove("show"); });
+// ===== Users & Roles (roster) =====
+const roleLabels = { security: "Security Officer", frontdesk: "Front Desk Officer", admin: "Admin" };
+async function loadRoster() {
+  try {
+    const roster = await api("/admin/roster");
+    document.getElementById("usersCount").textContent = `${roster.length} member${roster.length !== 1 ? "s" : ""}`;
+    const body = document.getElementById("usersTableBody");
+    if (roster.length === 0) { body.innerHTML = `<tr class="empty-row"><td colspan="4">No staff added yet.</td></tr>`; return; }
+    body.innerHTML = roster.map(u => `
+      <tr>
+        <td><div class="name-cell">${u.name}</div><div class="sub-cell">ID #${String(u.id).padStart(3,"0")}</div></td>
+        <td><span class="role-pill ${u.role}">${roleLabels[u.role]}</span></td>
+        <td><span class="status-pill ${u.status}"><span class="dot"></span>${u.status === "active" ? "Active" : "Suspended"}</span></td>
+        <td><div class="row-actions"><button class="icon-btn ${u.status === "active" ? "suspend" : "activate"}" data-toggle="${u.id}">${u.status === "active" ? "Suspend" : "Activate"}</button></div></td>
+      </tr>
+    `).join("");
+    document.querySelectorAll("[data-toggle]").forEach(btn => btn.addEventListener("click", () => toggleRoster(Number(btn.dataset.toggle))));
+  } catch (e) { showToast(e.message, true); }
+}
+async function toggleRoster(id) {
+  try {
+    const updated = await api(`/admin/roster/${id}`, { method: "PATCH" });
+    loadRoster();
+    showToast(`${updated.name}'s account was ${updated.status === "active" ? "reactivated" : "suspended"}.`);
+  } catch (e) { showToast(e.message, true); }
+}
+async function saveUser() {
+  const name = document.getElementById("userName").value.trim();
+  const role = document.getElementById("userRole").value;
+  clearFieldError("userName");
+  if (!/^[A-Za-z\s'-]{2,}$/.test(name)) { markInvalid("userName"); return; }
+  try {
+    await api("/admin/roster", { method: "POST", body: JSON.stringify({ name, role }) });
+    document.getElementById("userModalOverlay").classList.remove("show");
+    loadRoster();
+    showToast(`${name} was added to the roster.`);
+  } catch (e) { showToast(e.message, true); }
+}
 
-    loadVisits(true);
-    startPolling();
-    initGuide();
-  }
-
-  // ============================================================
-  // Adaptive polling: 25s baseline, +5s each cycle with no change,
-  // capped at 1:50 (110s), reset to 25s the instant something changes.
-  // ============================================================
-  const POLL_MIN = 25000, POLL_STEP = 5000, POLL_MAX = 110000;
-  let pollInterval = POLL_MIN;
-  let pollTimer = null;
-  let lastSnapshotKey = "";
-
-  function snapshotKey(list) {
-    return list.map(v => `${v.id}:${v.status}`).join("|");
-  }
-
-  function startPolling() {
-    stopPolling();
-    pollTimer = setTimeout(pollTick, pollInterval);
-  }
-  function stopPolling() { if (pollTimer) clearTimeout(pollTimer); pollTimer = null; }
-
-  async function pollTick() {
-    const changed = await loadVisits(false);
-    pollInterval = changed ? POLL_MIN : Math.min(pollInterval + POLL_STEP, POLL_MAX);
-    pollTimer = setTimeout(pollTick, pollInterval);
-  }
-
-  // Returns true if the fetched data differs from what's on screen
-  async function loadVisits(isInitial) {
-    try {
-      const rows = await api("/visits");
-      const key = snapshotKey(rows);
-      const changed = key !== lastSnapshotKey;
-      lastSnapshotKey = key;
-      visits = rows;
-      renderTable();
-      return isInitial ? false : changed;
-    } catch (e) {
-      if (isInitial) showToast(e.message, true);
-      return false;
-    }
-  }
-
-  function renderTable() {
-    const q = document.getElementById("searchInput").value.trim().toLowerCase();
-    const list = visits.filter(v => {
-      const matchesFilter = activeFilter === "all" || v.status === activeFilter;
-      const matchesSearch = !q || v.visitor_name.toLowerCase().includes(q) || v.host.toLowerCase().includes(q);
-      return matchesFilter && matchesSearch;
-    });
-
-    const body = document.getElementById("tableBody");
-    if (list.length === 0) {
-      body.innerHTML = `<tr class="empty-row"><td colspan="5">No visitors match this view.</td></tr>`;
-    } else {
-      body.innerHTML = list.map(v => `
-        <tr class="visit-row" data-id="${v.id}">
-          <td><div class="visitor-name">${v.visitor_name}</div><div class="visitor-sub">${v.department}</div></td>
+// ===== Visitor Logs (batched) =====
+const BATCH_SIZE = 20;
+let logsOffset = 0, logsTotal = 0;
+async function loadLogs(reset) {
+  if (reset) { logsOffset = 0; document.getElementById("logsTableBody").innerHTML = ""; }
+  const q = document.getElementById("logsSearch").value.trim();
+  try {
+    const data = await api(`/admin/visits?search=${encodeURIComponent(q)}&limit=${BATCH_SIZE}&offset=${logsOffset}`);
+    logsTotal = data.total;
+    const body = document.getElementById("logsTableBody");
+    if (reset && data.rows.length === 0) { body.innerHTML = `<tr class="empty-row"><td colspan="6">No visits match your search.</td></tr>`; }
+    else {
+      body.insertAdjacentHTML("beforeend", data.rows.map(v => `
+        <tr>
+          <td><div class="name-cell">${v.visitor_name}</div></td>
+          <td>${v.department}</td>
           <td>${v.host}</td>
-          <td><span class="appt-tag ${v.appt_type}">${v.appt_type === "scheduled" ? "Scheduled" : "Walk-in"}</span></td>
-          <td>${formatTime(v.checkin)}</td>
-          <td><span class="status-pill ${v.status}"><span class="dot"></span>${statusMeta[v.status]}</span></td>
+          <td>${formatDT(v.checkin)}</td>
+          <td>${formatDT(v.checkout)}</td>
+          <td><span class="visit-status-pill ${v.status}"><span class="dot"></span>${v.status.replace("-"," ")}</span></td>
         </tr>
-      `).join("");
-      document.querySelectorAll(".visit-row").forEach(row => row.addEventListener("click", () => openModal(Number(row.dataset.id))));
+      `).join(""));
     }
+    logsOffset += data.rows.length;
+    document.getElementById("logsCountChip").textContent = `${logsOffset} of ${logsTotal} loaded`;
+    const footer = document.getElementById("logsFooter");
+    if (logsOffset < logsTotal) {
+      footer.innerHTML = `<div class="load-more-row"><button class="btn-load-more" id="loadMoreBtn">Load ${BATCH_SIZE} more (${logsTotal - logsOffset} remaining)</button></div>`;
+      document.getElementById("loadMoreBtn").addEventListener("click", () => loadLogs(false));
+    } else if (logsTotal > 0) {
+      footer.innerHTML = `<div class="logs-fully-loaded">All ${logsTotal} records loaded — this is the complete history since the system began.</div>`;
+    } else { footer.innerHTML = ""; }
+  } catch (e) { showToast(e.message, true); }
+}
+function formatDT(str) { if (!str) return "—"; const d = new Date(str); return isNaN(d) ? "—" : d.toLocaleString("en-US",{month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"}); }
 
-    document.getElementById("statPending").textContent = visits.filter(v => v.status === "pending").length;
-    document.getElementById("statHold").textContent = visits.filter(v => v.status === "hold").length;
-    document.getElementById("statApproved").textContent = visits.filter(v => v.status === "approved").length;
-    document.getElementById("statWithHost").textContent = visits.filter(v => v.status === "with-host").length;
-    document.getElementById("statRejected").textContent = visits.filter(v => v.status === "rejected").length;
-  }
+// ============================================================
+// Session Control — live-polled the same way Front Desk polls
+// the visit board: 25s baseline, backs off by 5s each cycle with
+// no change, capped at 110s, resets to 25s the instant something
+// changes (including our own force-logout action). This is what
+// makes Force Logout / another portal's log-out show up here
+// without needing a manual refresh.
+// ============================================================
+const SESSIONS_POLL_MIN = 25000, SESSIONS_POLL_STEP = 5000, SESSIONS_POLL_MAX = 110000;
+let sessionsPollInterval = SESSIONS_POLL_MIN;
+let sessionsPollTimer = null;
+let lastSessionsSnapshotKey = "";
 
-  const overlay = document.getElementById("modalOverlay");
+function sessionsSnapshotKey(list) {
+  return list.map(s => `${s.id}:${s.last_seen}`).join("|");
+}
 
-  function openModal(id) {
-    const v = visits.find(x => x.id === id);
-    if (!v) return;
-    activeVisitId = id;
-    document.getElementById("mAvatar").textContent = initials(v.visitor_name);
-    document.getElementById("mName").textContent = v.visitor_name;
-    document.getElementById("mMeta").textContent = `${v.visitor_phone} · ${v.appt_type === "scheduled" ? "Scheduled" : "Walk-in"} visitor`;
-    document.getElementById("mDept").textContent = v.department;
-    document.getElementById("mHost").textContent = v.host;
-    document.getElementById("mPurpose").textContent = v.purpose;
-    document.getElementById("mCheckin").textContent = formatTime(v.checkin);
-    renderActionArea(v);
-    overlay.classList.add("show");
-  }
+function startSessionsPolling() {
+  stopSessionsPolling();
+  sessionsPollTimer = setTimeout(sessionsPollTick, sessionsPollInterval);
+}
+function stopSessionsPolling() { if (sessionsPollTimer) clearTimeout(sessionsPollTimer); sessionsPollTimer = null; }
 
-  function icon(path) { return `<svg viewBox="0 0 24 24">${path}</svg>`; }
+async function sessionsPollTick() {
+  const changed = await loadSessions(false);
+  // Login History reflects the same logout/force-logout events, so refresh it
+  // on the same cadence rather than leaving it to go stale too.
+  loadHistory();
+  sessionsPollInterval = changed ? SESSIONS_POLL_MIN : Math.min(sessionsPollInterval + SESSIONS_POLL_STEP, SESSIONS_POLL_MAX);
+  sessionsPollTimer = setTimeout(sessionsPollTick, sessionsPollInterval);
+}
 
-  function renderActionArea(v) {
-    const area = document.getElementById("mActionArea");
-    if (v.status === "pending" || v.status === "hold") {
-      area.innerHTML = `
-        <div class="stage-label">Step 1 — Confirm host availability</div>
-        <button class="action-btn available" id="btnHostAvailable"><span class="icon">${icon('<path d="m5 13 4 4L19 7"/>')}</span><span><div class="t">Host is available</div><div class="s">Proceed to notify host of arrival</div></span></button>
-        <button class="action-btn unavailable" id="btnHostUnavailable"><span class="icon">${icon('<circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/>')}</span><span><div class="t">Host is unavailable</div><div class="s">Keep visitor on hold in reception</div></span></button>
-      `;
-      document.getElementById("btnHostAvailable").addEventListener("click", () => renderHostNotifiedActions(v));
-      document.getElementById("btnHostUnavailable").addEventListener("click", () => setStatus(v.id, "hold", `${v.visitor_name} placed on hold — host unavailable.`));
-    } else if (v.status === "approved") {
-      area.innerHTML = `<div class="stage-label">Approved — visitor directed to office</div>
-        <button class="action-btn checkout" id="btnWithHost"><span class="icon">${icon('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>')}</span><span><div class="t">Mark as with host</div><div class="s">Visitor has reached the host's office</div></span></button>`;
-      document.getElementById("btnWithHost").addEventListener("click", () => setStatus(v.id, "with-host", `${v.visitor_name} is now with ${v.host}.`));
-    } else if (v.status === "with-host") {
-      area.innerHTML = `<div class="stage-label">Visit in progress</div>
-        <button class="action-btn checkout" id="btnCheckout"><span class="icon">${icon('<path d="M9 12H3m0 0 4-4m-4 4 4 4"/><path d="M15 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/>')}</span><span><div class="t">Check out visitor</div><div class="s">Visitor has left the premises</div></span></button>`;
-      document.getElementById("btnCheckout").addEventListener("click", () => setStatus(v.id, "checked-out", `${v.visitor_name} has been checked out.`));
-    } else if (v.status === "rejected") {
-      area.innerHTML = `<div class="terminal-note">This visitor was rejected. No further action needed.</div>`;
-    } else if (v.status === "checked-out") {
-      area.innerHTML = `<div class="terminal-note">This visit is complete. The visitor has checked out.</div>`;
+// Returns true if the fetched session list differs from what's on screen.
+// isInitial suppresses the "changed" signal on first load so the very
+// first poll tick doesn't treat "went from nothing to something" as a change.
+async function loadSessions(isInitial) {
+  try {
+    const sessions = await api("/admin/sessions");
+    const key = sessionsSnapshotKey(sessions);
+    const changed = key !== lastSessionsSnapshotKey;
+    lastSessionsSnapshotKey = key;
+
+    document.getElementById("sessionsCount").textContent = `${sessions.length} active`;
+    const list = document.getElementById("sessionsList");
+    if (sessions.length === 0) {
+      list.innerHTML = `<div style="font-size:13px;color:var(--text-tertiary);padding:12px 0;">No one is currently logged in.</div>`;
+      return isInitial ? false : changed;
     }
-  }
+    list.innerHTML = sessions.map(s => `
+      <div class="session-card">
+        <div><div class="s-name">${s.display_name} <span class="role-pill ${s.portal}" style="margin-left:6px;">${s.portal}</span></div>
+        <div class="s-meta">Logged in ${new Date(s.created_at).toLocaleString("en-US",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})} · Last seen ${new Date(s.last_seen).toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"})}</div></div>
+        <button class="icon-btn suspend" data-force="${s.id}">Force Logout</button>
+      </div>
+    `).join("");
+    document.querySelectorAll("[data-force]").forEach(btn => btn.addEventListener("click", () => forceLogout(Number(btn.dataset.force))));
+    return isInitial ? false : changed;
+  } catch (e) { showToast(e.message, true); return false; }
+}
+async function forceLogout(sessionId) {
+  try {
+    await api(`/admin/sessions/${sessionId}/force-logout`, { method: "POST" });
+    sessionsPollInterval = SESSIONS_POLL_MIN; // reset backoff immediately on our own action too
+    loadSessions(false);
+    loadHistory();
+    showToast("Session ended.");
+  } catch (e) { showToast(e.message, true); }
+}
 
-  function renderHostNotifiedActions(v) {
-    const area = document.getElementById("mActionArea");
-    area.innerHTML = `
-      <div class="stage-label">Step 2 — Host notified. Awaiting response.</div>
-      <button class="action-btn accept" id="btnAccept"><span class="icon">${icon('<path d="m5 13 4 4L19 7"/>')}</span><span><div class="t">Accept — send them in</div><div class="s">Direct visitor to host's office</div></span></button>
-      <button class="action-btn reject" id="btnReject"><span class="icon">${icon('<path d="M18 6 6 18M6 6l12 12"/>')}</span><span><div class="t">Reject — not available</div><div class="s">Visitor asked to leave or reschedule</div></span></button>
-      <button class="action-btn hold" id="btnHold"><span class="icon">${icon('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>')}</span><span><div class="t">Hold — give me a few minutes</div><div class="s">Visitor waits a little longer</div></span></button>
-    `;
-    document.getElementById("btnAccept").addEventListener("click", () => setStatus(v.id, "approved", `${v.visitor_name} approved — directed to office.`));
-    document.getElementById("btnReject").addEventListener("click", () => setStatus(v.id, "rejected", `${v.visitor_name} was rejected.`));
-    document.getElementById("btnHold").addEventListener("click", () => setStatus(v.id, "hold", `${v.visitor_name} placed on hold.`));
-  }
+// ===== Concurrency limits =====
+async function loadConcurrency() {
+  try {
+    const limits = await api("/admin/concurrency");
+    document.getElementById("concurrencyList").innerHTML = limits.map(l => `
+      <div class="concurrency-row">
+        <div class="c-portal">${l.portal}</div>
+        <div class="stepper">
+          <button data-dec="${l.portal}" ${l.max_sessions <= 1 ? "disabled" : ""}>−</button>
+          <span class="val">${l.max_sessions}</span>
+          <button data-inc="${l.portal}" ${l.max_sessions >= CEILING ? "disabled" : ""}>+</button>
+        </div>
+      </div>
+    `).join("");
+    document.querySelectorAll("[data-dec]").forEach(btn => btn.addEventListener("click", () => adjustConcurrency(btn.dataset.dec, -1)));
+    document.querySelectorAll("[data-inc]").forEach(btn => btn.addEventListener("click", () => adjustConcurrency(btn.dataset.inc, 1)));
+  } catch (e) { showToast(e.message, true); }
+}
+async function adjustConcurrency(portal, delta) {
+  try {
+    const limits = await api("/admin/concurrency");
+    const current = limits.find(l => l.portal === portal);
+    const newVal = Math.max(1, Math.min(CEILING, current.max_sessions + delta));
+    await api("/admin/concurrency", { method: "POST", body: JSON.stringify({ portal, maxSessions: newVal }) });
+    loadConcurrency();
+    showToast(`${portal} limit set to ${newVal}.`);
+  } catch (e) { showToast(e.message, true); }
+}
 
-  async function setStatus(id, newStatus, message) {
-    try {
-      await api(`/visits/${id}`, { method: "PATCH", body: JSON.stringify({ status: newStatus }) });
-      overlay.classList.remove("show");
-      showToast(message);
-      pollInterval = POLL_MIN; // reset backoff immediately on our own action too
-      loadVisits(false);
-    } catch (e) { showToast(e.message, true); }
-  }
+// ===== Passcodes =====
+let passcodeTargetPortal = null;
+function loadPasscodes() {
+  const portals = ["security", "frontdesk", "admin"];
+  document.getElementById("passcodeList").innerHTML = portals.map(p => `
+    <div class="concurrency-row">
+      <div class="c-portal">${p}</div>
+      <button class="icon-btn" data-changepass="${p}">Change Passcode</button>
+    </div>
+  `).join("");
+  document.querySelectorAll("[data-changepass]").forEach(btn => btn.addEventListener("click", () => {
+    passcodeTargetPortal = btn.dataset.changepass;
+    document.getElementById("passcodeModalTitle").textContent = `Change ${passcodeTargetPortal} Passcode`;
+    document.getElementById("newPasscodeInput").value = "";
+    clearFieldError("newPasscodeInput");
+    document.getElementById("passcodeModalOverlay").classList.add("show");
+  }));
+}
+async function savePasscodeChange() {
+  const val = document.getElementById("newPasscodeInput").value;
+  clearFieldError("newPasscodeInput");
+  if (val.length < 4) { markInvalid("newPasscodeInput"); return; }
+  try {
+    await api("/admin/passcode", { method: "POST", body: JSON.stringify({ portal: passcodeTargetPortal, newPasscode: val }) });
+    document.getElementById("passcodeModalOverlay").classList.remove("show");
+    showToast(`${passcodeTargetPortal} passcode updated.`);
+  } catch (e) { showToast(e.message, true); }
+}
 
-  function showToast(msg, isError = false) {
-    const toast = document.getElementById("toast");
-    document.getElementById("toastText").textContent = msg;
-    toast.classList.toggle("error", !!isError);
-    toast.classList.add("show");
-    setTimeout(() => toast.classList.remove("show"), 3000);
-  }
+// ===== Login history =====
+async function loadHistory() {
+  try {
+    const rows = await api("/admin/login-history?limit=50");
+    const body = document.getElementById("historyTableBody");
+    if (rows.length === 0) { body.innerHTML = `<tr class="empty-row"><td colspan="4">No login history yet.</td></tr>`; return; }
+    body.innerHTML = rows.map(r => `
+      <tr><td class="name-cell">${r.display_name}</td><td><span class="role-pill ${r.portal}">${r.portal}</span></td>
+      <td>${new Date(r.logged_in_at).toLocaleString("en-US",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})}</td>
+      <td>${r.logged_out_at ? new Date(r.logged_out_at).toLocaleString("en-US",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"}) : "—"}</td></tr>
+    `).join("");
+  } catch (e) { showToast(e.message, true); }
+}
 
-  // ===== AI Guide =====
-  function initGuide() {
-    const fab = document.getElementById("guideFab"), panel = document.getElementById("guidePanel");
-    fab.addEventListener("click", () => panel.classList.toggle("show"));
-    document.getElementById("closeGuide").addEventListener("click", () => panel.classList.remove("show"));
-    document.querySelectorAll("#guideQuick button").forEach(btn => btn.addEventListener("click", () => askGuide(btn.dataset.q)));
-    document.getElementById("guideSend").addEventListener("click", sendGuideInput);
-    document.getElementById("guideInput").addEventListener("keydown", (e) => { if (e.key === "Enter") sendGuideInput(); });
+function showToast(msg, isError = false) {
+  const toast = document.getElementById("toast");
+  document.getElementById("toastText").textContent = msg;
+  toast.classList.toggle("error", !!isError);
+  toast.classList.add("show");
+  setTimeout(() => toast.classList.remove("show"), 3000);
+}
+
+// ===== AI Guide =====
+function initGuide() {
+  const fab = document.getElementById("guideFab"), panel = document.getElementById("guidePanel");
+  fab.addEventListener("click", () => panel.classList.toggle("show"));
+  document.getElementById("closeGuide").addEventListener("click", () => panel.classList.remove("show"));
+  document.querySelectorAll("#guideQuick button").forEach(btn => btn.addEventListener("click", () => askGuide(btn.dataset.q)));
+  document.getElementById("guideSend").addEventListener("click", sendGuideInput);
+  document.getElementById("guideInput").addEventListener("keydown", (e) => { if (e.key === "Enter") sendGuideInput(); });
+}
+function sendGuideInput() { const input = document.getElementById("guideInput"); const q = input.value.trim(); if (!q) return; input.value = ""; askGuide(q); }
+async function askGuide(question) {
+  const body = document.getElementById("guideBody");
+  body.insertAdjacentHTML("beforeend", `<div class="guide-msg user">${escapeHtml(question)}</div>`);
+  body.insertAdjacentHTML("beforeend", `<div class="guide-msg bot" id="guideTyping">Thinking...</div>`);
+  body.scrollTop = body.scrollHeight;
+  try {
+    const res = await fetch(`${API_BASE}/ai/ask`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ portal: PORTAL, question }) });
+    const data = await res.json();
+    document.getElementById("guideTyping").remove();
+    if (!res.ok) throw new Error(data.error || "Couldn't get an answer.");
+    body.insertAdjacentHTML("beforeend", `<div class="guide-msg bot">${escapeHtml(data.answer)}</div>`);
+  } catch (e) {
+    document.getElementById("guideTyping").remove();
+    body.insertAdjacentHTML("beforeend", `<div class="guide-msg bot">Sorry, I couldn't reach the guide right now. (${escapeHtml(e.message)})</div>`);
   }
-  function sendGuideInput() {
-    const input = document.getElementById("guideInput");
-    const q = input.value.trim();
-    if (!q) return;
-    input.value = ""; askGuide(q);
-  }
-  async function askGuide(question) {
-    const body = document.getElementById("guideBody");
-    body.insertAdjacentHTML("beforeend", `<div class="guide-msg user">${escapeHtml(question)}</div>`);
-    body.insertAdjacentHTML("beforeend", `<div class="guide-msg bot" id="guideTyping">Thinking...</div>`);
-    body.scrollTop = body.scrollHeight;
-    try {
-      const res = await fetch(`${API_BASE}/ai/ask`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ portal: PORTAL, question }) });
-      const data = await res.json();
-      document.getElementById("guideTyping").remove();
-      if (!res.ok) throw new Error(data.error || "Couldn't get an answer.");
-      body.insertAdjacentHTML("beforeend", `<div class="guide-msg bot">${escapeHtml(data.answer)}</div>`);
-    } catch (e) {
-      document.getElementById("guideTyping").remove();
-      body.insertAdjacentHTML("beforeend", `<div class="guide-msg bot">Sorry, I couldn't reach the guide right now. (${escapeHtml(e.message)})</div>`);
-    }
-    body.scrollTop = body.scrollHeight;
-  }
-  function escapeHtml(str) { const d = document.createElement("div"); d.textContent = str; return d.innerHTML; }
+  body.scrollTop = body.scrollHeight;
+}
+function escapeHtml(str) { const d = document.createElement("div"); d.textContent = str; return d.innerHTML; }
 </script>
-
 </body>
 </html>
