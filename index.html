@@ -8,430 +8,375 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #FFFFFF;
-    --surface: #F7F8FA;
-    --surface-hover: #F0F2F5;
-    --border: #E4E7EC;
-    --text-primary: #1C2333;
-    --text-secondary: #5B6472;
-    --text-tertiary: #8A93A3;
-
-    --accent-security: #0F4C5C;
-    --accent-security-tint: #E8F1F2;
-    --accent-frontdesk: #B8792A;
-    --accent-frontdesk-tint: #FBF1E4;
-    --accent-admin: #6B4C6E;
-    --accent-admin-tint: #F1EAF2;
-
-    --shadow-card: 0 1px 2px rgba(28, 35, 51, 0.04), 0 1px 3px rgba(28, 35, 51, 0.06);
-    --shadow-card-hover: 0 4px 12px rgba(28, 35, 51, 0.08), 0 2px 4px rgba(28, 35, 51, 0.04);
-
-    --font-display: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    font-family: var(--font-body);
-    background: var(--bg);
-    color: var(--text-primary);
-    min-height: 100vh;
-    -webkit-font-smoothing: antialiased;
-    transition: background-color 0.35s ease, color 0.35s ease;
-  }
-
-  body,
-  .top-bar,
-  .card-icon,
-  .theme-toggle,
-  .wordmark .divider,
-  .wordmark .company,
-  .wordmark .product,
-  .top-bar-meta,
-  .home-header h1,
-  .home-header p,
-  .home-header .eyebrow,
-  .home-footer,
-  .portal-card h2,
-  .portal-card p.role-desc,
-  .card-icon svg {
-    transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease, stroke 0.35s ease, fill 0.35s ease;
-  }
-
-  :focus-visible {
-    outline: 2px solid var(--text-primary);
-    outline-offset: 3px;
-    border-radius: 4px;
-  }
-
-  .app {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .top-bar {
-    border-bottom: 1px solid var(--border);
-    padding: 20px 40px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .wordmark {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-  }
-
-  .wordmark .company {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 17px;
-    letter-spacing: 0.02em;
-    color: var(--text-primary);
-  }
-
-  .wordmark .divider {
-    color: var(--border);
-    font-size: 17px;
-  }
-
-  .wordmark .product {
-    font-family: var(--font-body);
-    font-weight: 500;
-    font-size: 14px;
-    color: var(--text-secondary);
-  }
-
-  .top-bar-meta {
-    font-size: 13px;
-    color: var(--text-tertiary);
-    font-variant-numeric: tabular-nums;
-  }
-
-  .view { display: none; flex: 1; }
-  .view.active { display: flex; flex-direction: column; }
-
-  #view-home.active {
-    align-items: center;
-    justify-content: center;
-    padding: 60px 40px 80px;
-  }
-
-  .home-inner {
-    width: 100%;
-    max-width: 980px;
-  }
-
-  .home-header {
-    text-align: center;
-    margin-bottom: 56px;
-  }
-
-  .home-header .eyebrow {
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--text-tertiary);
-    margin-bottom: 14px;
-  }
-
-  .home-header h1 {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 32px;
-    letter-spacing: -0.01em;
-    color: var(--text-primary);
-    margin-bottom: 12px;
-  }
-
-  .home-header p {
-    font-size: 15px;
-    color: var(--text-secondary);
-    max-width: 480px;
-    margin: 0 auto;
-    line-height: 1.5;
-  }
-
-  .portal-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-  }
-
-  .portal-card {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    text-align: left;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 28px 24px 24px;
-    overflow: hidden;
-    cursor: pointer;
-    transition: box-shadow 0.22s ease, transform 0.22s ease, border-color 0.22s ease, background-color 0.35s ease;
-    box-shadow: var(--shadow-card);
-    will-change: transform;
-  }
-
-  .portal-card:hover {
-    box-shadow: var(--shadow-card-hover), 0 0 0 1px var(--card-accent);
-    transform: translateY(-6px);
-    border-color: var(--card-accent);
-    background: var(--surface-hover);
-  }
-
-  .portal-card:active {
-    transform: translateY(-3px);
-  }
-
-  .card-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    background: var(--card-accent, #0F4C5C);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 6px rgba(28, 35, 51, 0.18);
-  }
-
-  /* Light ("white") theme only: all icon badges use dodger blue */
-  body:not(.theme-dark) .card-icon {
-    background: #1E90FF;
-    box-shadow: 0 2px 6px rgba(30, 144, 255, 0.35);
-  }
-
-  .card-icon svg {
-    width: 23px;
-    height: 23px;
-    fill: none;
-    stroke: #FFFFFF;
-    stroke-width: 2.2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
-  .card-security { --card-accent: var(--accent-security); --card-tint: var(--accent-security-tint); }
-  .card-frontdesk { --card-accent: var(--accent-frontdesk); --card-tint: var(--accent-frontdesk-tint); }
-  .card-admin { --card-accent: var(--accent-admin); --card-tint: var(--accent-admin-tint); }
-
-  .portal-card h2 {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 17.5px;
-    color: var(--text-primary);
-    margin-bottom: 6px;
-  }
-
-  .portal-card p.role-desc {
-    font-size: 13.5px;
-    color: var(--text-secondary);
-    line-height: 1.5;
-  }
-
-  .home-footer {
-    text-align: center;
-    margin-top: 48px;
-    font-size: 12.5px;
-    color: var(--text-tertiary);
-  }
-
-  @media (max-width: 860px) {
-    .portal-grid { grid-template-columns: 1fr; }
-    .top-bar { padding: 16px 20px; }
-    .home-header h1 { font-size: 26px; }
-    #view-home.active { padding: 40px 20px 60px; }
-  }
-
-  @keyframes card-shake {
-    10%, 90% { transform: translate3d(-1px, 0, 0); }
-    20%, 80% { transform: translate3d(2px, 0, 0); }
-    30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-    40%, 60% { transform: translate3d(4px, 0, 0); }
-  }
-
-  .portal-card.shake {
-    animation: card-shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    * { transition: none !important; }
-    .portal-card.shake { animation: none !important; }
-  }
-
-  body.theme-dark {
-    --bg: #0B0D12;
-    --surface: #15171E;
-    --surface-hover: #1C1F28;
-    --border: #262A35;
-    --text-primary: #F2F4F8;
-    --text-secondary: #A6ADBB;
-    --text-tertiary: #6E7684;
-  }
-
-  body.theme-dark .card-icon {
-    background: rgba(0, 0, 0, 0.25);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
-  }
-
-  body.theme-dark .card-icon svg {
-    stroke: #FFFFFF;
-  }
-
-  body.theme-dark .card-icon path[fill] {
-    fill: #FFFFFF;
-  }
-
-  .theme-toggle {
-    position: fixed;
-    top: 88px;
-    right: 24px;
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 10;
-    transition: background 0.16s ease, border-color 0.35s ease;
-  }
-
-  .theme-toggle:hover {
-    background: var(--surface-hover);
-  }
-
-  .theme-toggle svg {
-    width: 18px;
-    height: 18px;
-    fill: none;
-    stroke: var(--text-primary);
-    stroke-width: 1.8;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
-  .theme-toggle .icon-moon { display: none; }
-  body.theme-dark .theme-toggle .icon-sun { display: none; }
-  body.theme-dark .theme-toggle .icon-moon { display: block; }
+:root {
+  --bg: #FFFFFF;
+  --surface: #F7F8FA;
+  --surface-hover: #F0F2F5;
+  --border: #E4E7EC;
+  --text-primary: #1C2333;
+  --text-secondary: #5B6472;
+  --text-tertiary: #8A93A3;
+  --accent-security: #0F4C5C;
+  --accent-security-tint: #E8F1F2;
+  --accent-frontdesk: #B8792A;
+  --accent-frontdesk-tint: #FBF1E4;
+  --accent-admin: #6B4C6E;
+  --accent-admin-tint: #F1EAF2;
+  --shadow-card: 0 1px 2px rgba(28, 35, 51, 0.04), 0 1px 3px rgba(28, 35, 51, 0.06);
+  --shadow-card-hover: 0 4px 12px rgba(28, 35, 51, 0.08), 0 2px 4px rgba(28, 35, 51, 0.04);
+  --font-display: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text-primary);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.35s ease, color 0.35s ease;
+}
+body,
+.top-bar,
+.card-icon,
+.theme-toggle,
+.wordmark .divider,
+.wordmark .company,
+.wordmark .product,
+.top-bar-meta,
+.home-header h1,
+.home-header p,
+.home-header .eyebrow,
+.home-footer,
+.portal-card h2,
+.portal-card p.role-desc,
+.card-icon svg {
+  transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease, stroke 0.35s ease, fill 0.35s ease;
+}
+:focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.top-bar {
+  border-bottom: 1px solid var(--border);
+  padding: 20px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.wordmark {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.wordmark .company {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+}
+.wordmark .divider {
+  color: var(--border);
+  font-size: 17px;
+}
+.wordmark .product {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+.top-bar-meta {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+.view { display: none; flex: 1; }
+.view.active { display: flex; flex-direction: column; }
+#view-home.active {
+  align-items: center;
+  justify-content: center;
+  padding: 60px 40px 80px;
+}
+.home-inner {
+  width: 100%;
+  max-width: 980px;
+}
+.home-header {
+  text-align: center;
+  margin-bottom: 56px;
+}
+.home-header .eyebrow {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-bottom: 14px;
+}
+.home-header h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 32px;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+.home-header p {
+  font-size: 15px;
+  color: var(--text-secondary);
+  max-width: 480px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+.portal-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.portal-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px 24px 24px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow 0.22s ease, transform 0.22s ease, border-color 0.22s ease, background-color 0.35s ease;
+  box-shadow: var(--shadow-card);
+  will-change: transform;
+}
+.portal-card:hover {
+  box-shadow: var(--shadow-card-hover), 0 0 0 1px var(--card-accent);
+  transform: translateY(-6px);
+  border-color: var(--card-accent);
+  background: var(--surface-hover);
+}
+.portal-card:active {
+  transform: translateY(-3px);
+}
+.card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--card-accent, #0F4C5C);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 6px rgba(28, 35, 51, 0.18);
+}
+/* Light ("white") theme only: all icon badges use dodger blue */
+body:not(.theme-dark) .card-icon {
+  background: #1E90FF;
+  box-shadow: 0 2px 6px rgba(30, 144, 255, 0.35);
+}
+.card-icon svg {
+  width: 23px;
+  height: 23px;
+  fill: none;
+  stroke: #FFFFFF;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.card-security { --card-accent: var(--accent-security); --card-tint: var(--accent-security-tint); }
+.card-frontdesk { --card-accent: var(--accent-frontdesk); --card-tint: var(--accent-frontdesk-tint); }
+.card-admin { --card-accent: var(--accent-admin); --card-tint: var(--accent-admin-tint); }
+.portal-card h2 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 17.5px;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+.portal-card p.role-desc {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+.home-footer {
+  text-align: center;
+  margin-top: 48px;
+  font-size: 12.5px;
+  color: var(--text-tertiary);
+}
+@media (max-width: 860px) {
+  .portal-grid { grid-template-columns: 1fr; }
+  .top-bar { padding: 16px 20px; }
+  .home-header h1 { font-size: 26px; }
+  #view-home.active { padding: 40px 20px 60px; }
+}
+@keyframes card-shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+.portal-card.shake {
+  animation: card-shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+  .portal-card.shake { animation: none !important; }
+}
+body.theme-dark {
+  --bg: #0B0D12;
+  --surface: #15171E;
+  --surface-hover: #1C1F28;
+  --border: #262A35;
+  --text-primary: #F2F4F8;
+  --text-secondary: #A6ADBB;
+  --text-tertiary: #6E7684;
+}
+body.theme-dark .card-icon {
+  background: rgba(0, 0, 0, 0.25);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+body.theme-dark .card-icon svg {
+  stroke: #FFFFFF;
+}
+body.theme-dark .card-icon path[fill] {
+  fill: #FFFFFF;
+}
+.theme-toggle {
+  position: fixed;
+  top: 88px;
+  right: 24px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: background 0.16s ease, border-color 0.35s ease;
+}
+.theme-toggle:hover {
+  background: var(--surface-hover);
+}
+.theme-toggle svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: var(--text-primary);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.theme-toggle .icon-moon { display: none; }
+body.theme-dark .theme-toggle .icon-sun { display: none; }
+body.theme-dark .theme-toggle .icon-moon { display: block; }
 </style>
 </head>
 <body class="theme-dark">
-
 <div class="app">
-
-  <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark theme">
-    <svg class="icon-sun" viewBox="0 0 24 24">
-      <circle cx="12" cy="12" r="4.2"/>
-      <path d="M12 2.5v2.4M12 19.1v2.4M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7"/>
-    </svg>
-    <svg class="icon-moon" viewBox="0 0 24 24">
-      <path d="M20 14.1A8.3 8.3 0 1 1 9.9 4a6.6 6.6 0 0 0 10.1 10.1z"/>
-    </svg>
-  </button>
-
-  <header class="top-bar">
-    <div class="wordmark">
-      <span class="company">REX Insurance</span>
-      <span class="divider">·</span>
-      <span class="product">Visitor Management System</span>
-    </div>
-    <div class="top-bar-meta" id="clock"></div>
-  </header>
-
-  <main id="view-home" class="view active">
-    <div class="home-inner">
-      <div class="home-header">
-        <div class="eyebrow">Internal Use Only</div>
-        <h1>Select your portal</h1>
-        <p>Choose the workspace that matches your role to begin managing visitor registration, approvals, and records.</p>
-      </div>
-
-      <div class="portal-grid">
-
-        <div class="portal-card card-security" data-href="./security-portal.html">
-          <div class="card-icon">
-            <svg viewBox="0 0 24 24">
-              <path d="M12 1.5 21 5v6.2c0 6.1-3.8 10.9-9 12.3-5.2-1.4-9-6.2-9-12.3V5l9-3.5z"/>
-              <path stroke="none" fill="#FFFFFF" d="m10.6 15.4-3-3 1.4-1.4 1.6 1.6 4.6-4.6 1.4 1.4-6 6z"/>
-            </svg>
-          </div>
-          <h2>Security Portal</h2>
-          <p class="role-desc">Register visitors at the gate, verify identity, and record check-in time.</p>
-        </div>
-
-        <div class="portal-card card-frontdesk" data-href="./frontdesk-portal.html">
-          <div class="card-icon">
-            <svg viewBox="0 0 24 24">
-              <rect x="2.5" y="18" width="19" height="2.4" rx="1.2"/>
-              <path d="M12 5.2a1.3 1.3 0 0 1 1.3 1.3v.4a7.6 7.6 0 0 1 5.7 7.35v1.75H5V14.25A7.6 7.6 0 0 1 10.7 6.9v-.4A1.3 1.3 0 0 1 12 5.2z"/>
-              <circle cx="12" cy="3.6" r="1.4"/>
-            </svg>
-          </div>
-          <h2>Front Desk Portal</h2>
-          <p class="role-desc">Confirm appointments, notify hosts, and track visitor status through checkout.</p>
-        </div>
-
-        <div class="portal-card card-admin" data-href="./admin-portal.html">
-          <div class="card-icon">
-            <svg viewBox="0 0 24 24">
-              <rect x="3" y="3.5" width="7.5" height="7.5" rx="1.6"/>
-              <rect x="13.5" y="3.5" width="7" height="4.6" rx="1.4"/>
-              <rect x="13.5" y="10.4" width="7" height="10.1" rx="1.6"/>
-              <rect x="3" y="13.3" width="7.5" height="7.2" rx="1.6"/>
-            </svg>
-          </div>
-          <h2>Admin Portal</h2>
-          <p class="role-desc">Manage users, departments, live analytics, and exportable visitor reports.</p>
-        </div>
-
-      </div>
-
-      <div class="home-footer">REX Insurance — Operations, Security &amp; Customer Relations</div>
-    </div>
-  </main>
-
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle dark theme">
+<svg class="icon-sun" viewBox="0 0 24 24">
+<circle cx="12" cy="12" r="4.2"/>
+<path d="M12 2.5v2.4M12 19.1v2.4M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7"/>
+</svg>
+<svg class="icon-moon" viewBox="0 0 24 24">
+<path d="M20 14.1A8.3 8.3 0 1 1 9.9 4a6.6 6.6 0 0 0 10.1 10.1z"/>
+</svg>
+</button>
+<header class="top-bar">
+<div class="wordmark">
+<span class="company">REX Insurance</span>
+<span class="divider">·</span>
+<span class="product">Visitor Management System</span>
 </div>
-
+<div class="top-bar-meta" id="clock"></div>
+</header>
+<main id="view-home" class="view active">
+<div class="home-inner">
+<div class="home-header">
+<div class="eyebrow">Internal Use Only</div>
+<h1>Select your portal</h1>
+<p>Choose the workspace that matches your role to begin managing visitor registration, approvals, and records.</p>
+</div>
+<div class="portal-grid">
+<div class="portal-card card-security" data-href="./security-portal.html">
+<div class="card-icon">
+<svg viewBox="0 0 24 24">
+<path d="M12 1.5 21 5v6.2c0 6.1-3.8 10.9-9 12.3-5.2-1.4-9-6.2-9-12.3V5l9-3.5z"/>
+<path stroke="none" fill="#FFFFFF" d="m10.6 15.4-3-3 1.4-1.4 1.6 1.6 4.6-4.6 1.4 1.4-6 6z"/>
+</svg>
+</div>
+<h2>Security Portal</h2>
+<p class="role-desc">Register visitors at the gate, verify identity, and record check-in time.</p>
+</div>
+<div class="portal-card card-frontdesk" data-href="./frontdesk-portal.html">
+<div class="card-icon">
+<svg viewBox="0 0 24 24">
+<rect x="2.5" y="18" width="19" height="2.4" rx="1.2"/>
+<path d="M12 5.2a1.3 1.3 0 0 1 1.3 1.3v.4a7.6 7.6 0 0 1 5.7 7.35v1.75H5V14.25A7.6 7.6 0 0 1 10.7 6.9v-.4A1.3 1.3 0 0 1 12 5.2z"/>
+<circle cx="12" cy="3.6" r="1.4"/>
+</svg>
+</div>
+<h2>Front Desk Portal</h2>
+<p class="role-desc">Confirm appointments, notify hosts, and track visitor status through checkout.</p>
+</div>
+<div class="portal-card card-admin" data-href="./admin-portal.html">
+<div class="card-icon">
+<svg viewBox="0 0 24 24">
+<rect x="3" y="3.5" width="7.5" height="7.5" rx="1.6"/>
+<rect x="13.5" y="3.5" width="7" height="4.6" rx="1.4"/>
+<rect x="13.5" y="10.4" width="7" height="10.1" rx="1.6"/>
+<rect x="3" y="13.3" width="7.5" height="7.2" rx="1.6"/>
+</svg>
+</div>
+<h2>Admin Portal</h2>
+<p class="role-desc">Manage users, departments, live analytics, and exportable visitor reports.</p>
+</div>
+</div>
+<div class="home-footer">REX Insurance — Operations, Security &amp; Customer Relations</div>
+</div>
+</main>
+</div>
 <script>
-  function updateClock() {
-    const now = new Date();
-    const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-    document.getElementById('clock').textContent = now.toLocaleDateString('en-US', options);
-  }
-  updateClock();
-  setInterval(updateClock, 1000 * 20);
+function updateClock() {
+  const now = new Date();
+  const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+  document.getElementById('clock').textContent = now.toLocaleDateString('en-US', options);
+}
+updateClock();
+setInterval(updateClock, 1000 * 20);
 
-  document.getElementById('themeToggle').addEventListener('click', function () {
-    document.body.classList.toggle('theme-dark');
-  });
+document.getElementById('themeToggle').addEventListener('click', function () {
+  document.body.classList.toggle('theme-dark');
+});
 
-  document.querySelectorAll('.portal-card').forEach(function (card) {
-    card.addEventListener('animationend', function (e) {
-      if (e.animationName === 'card-shake') {
-        card.classList.remove('shake');
-        const href = card.getAttribute('data-href');
-        if (href) window.location.href = href;
-      }
-    });
-
-    card.addEventListener('click', function () {
-      // already mid-shake: restart instantly without waiting a frame
+document.querySelectorAll('.portal-card').forEach(function (card) {
+  card.addEventListener('animationend', function (e) {
+    if (e.animationName === 'card-shake') {
       card.classList.remove('shake');
-      void card.offsetWidth; // synchronous reflow, forces restart with zero delay
-      card.classList.add('shake');
-    });
+      const href = card.getAttribute('data-href');
+      // Opens the portal in a new tab instead of navigating the landing
+      // page away, so the portal selector stays put in the original tab.
+      if (href) window.open(href, '_blank');
+    }
   });
-</script>
 
+  card.addEventListener('click', function () {
+    // already mid-shake: restart instantly without waiting a frame
+    card.classList.remove('shake');
+    void card.offsetWidth; // synchronous reflow, forces restart with zero delay
+    card.classList.add('shake');
+  });
+});
+</script>
 </body>
 </html>
