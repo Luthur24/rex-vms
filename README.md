@@ -110,7 +110,6 @@ rex-vms/
 
 The repository separates the entry interface from the three role-specific portal pages.
 
-Live Demo
 
 Live Application:
 https://rex-vms.vercel.app/
