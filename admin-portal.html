@@ -251,14 +251,10 @@ body.theme-dark .visit-status-pill.with-host, body.theme-dark .visit-status-pill
 <!-- ===== SESSION CONTROL ===== -->
 <div class="view" id="view-sessions">
 <div class="view-title">Session Control</div>
-<div class="view-sub">Manage who's logged in, passcodes, and concurrency limits per portal</div>
+<div class="view-sub">See who's logged in and manage portal passcodes</div>
 <div class="panel">
 <div class="panel-header"><div><h2>Active Sessions</h2><span class="sub" id="sessionsCount">0 active</span></div></div>
 <div id="sessionsList"></div>
-</div>
-<div class="panel">
-<div class="panel-header"><div><h2>Concurrency Limits</h2><span class="sub">Maximum simultaneous logins per portal (cap: 2)</span></div></div>
-<div id="concurrencyList"></div>
 </div>
 <div class="panel">
 <div class="panel-header"><div><h2>Passcodes</h2><span class="sub">Change the login passcode for any portal</span></div></div>
@@ -308,7 +304,6 @@ body.theme-dark .visit-status-pill.with-host, body.theme-dark .visit-status-pill
 <div class="guide-head"><span class="t">Admin Portal Guide</span><button class="close-guide" id="closeGuide">&times;</button></div>
 <div class="guide-body" id="guideBody"><div class="guide-msg bot">Hi! Ask me about managing users, checking the dashboard, session control, or reports.</div></div>
 <div class="guide-quick" id="guideQuick">
-<button data-q="How do I force-logout a stuck session?">Force-logout a session</button>
 <button data-q="How do I change a portal's passcode?">Change a passcode</button>
 <button data-q="How do the visitor logs work?">Visitor logs</button>
 </div>
@@ -320,7 +315,6 @@ const API_BASE = "https://rex-vms-backend.onrender.com/api";
 const PORTAL = "admin";
 const TOKEN_KEY = "rex_vms_token_admin";
 const NAME_KEY = "rex_vms_name_admin";
-const CEILING = 2;
 let authToken = localStorage.getItem(TOKEN_KEY);
 let userName = localStorage.getItem(NAME_KEY);
 
@@ -387,7 +381,6 @@ function initPortal() {
   loadRoster();
   loadLogs(true);
   loadSessions(true);
-  loadConcurrency();
   loadPasscodes();
   loadHistory();
   startSessionsPolling();
@@ -559,52 +552,11 @@ async function loadSessions(isInitial) {
       <div class="session-card">
         <div><div class="s-name">${s.display_name} <span class="role-pill ${s.portal}" style="margin-left:6px;">${s.portal}</span></div>
         <div class="s-meta">Logged in ${new Date(s.created_at).toLocaleString("en-US",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})} · Last seen ${new Date(s.last_seen).toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"})}</div></div>
-        <button class="icon-btn suspend" data-force="${s.id}">Force Logout</button>
       </div>
     `).join("");
-    document.querySelectorAll("[data-force]").forEach(btn => btn.addEventListener("click", () => forceLogout(Number(btn.dataset.force))));
     return isInitial ? false : changed;
   } catch (e) { showToast(e.message, true); return false; }
 }
-async function forceLogout(sessionId) {
-  try {
-    await api(`/admin/sessions/${sessionId}/force-logout`, { method: "POST" });
-    sessionsPollInterval = SESSIONS_POLL_MIN; // reset backoff immediately on our own action too
-    loadSessions(false);
-    loadHistory();
-    showToast("Session ended.");
-  } catch (e) { showToast(e.message, true); }
-}
-
-// ===== Concurrency limits =====
-async function loadConcurrency() {
-  try {
-    const limits = await api("/admin/concurrency");
-    document.getElementById("concurrencyList").innerHTML = limits.map(l => `
-      <div class="concurrency-row">
-        <div class="c-portal">${l.portal}</div>
-        <div class="stepper">
-          <button data-dec="${l.portal}" ${l.max_sessions <= 1 ? "disabled" : ""}>−</button>
-          <span class="val">${l.max_sessions}</span>
-          <button data-inc="${l.portal}" ${l.max_sessions >= CEILING ? "disabled" : ""}>+</button>
-        </div>
-      </div>
-    `).join("");
-    document.querySelectorAll("[data-dec]").forEach(btn => btn.addEventListener("click", () => adjustConcurrency(btn.dataset.dec, -1)));
-    document.querySelectorAll("[data-inc]").forEach(btn => btn.addEventListener("click", () => adjustConcurrency(btn.dataset.inc, 1)));
-  } catch (e) { showToast(e.message, true); }
-}
-async function adjustConcurrency(portal, delta) {
-  try {
-    const limits = await api("/admin/concurrency");
-    const current = limits.find(l => l.portal === portal);
-    const newVal = Math.max(1, Math.min(CEILING, current.max_sessions + delta));
-    await api("/admin/concurrency", { method: "POST", body: JSON.stringify({ portal, maxSessions: newVal }) });
-    loadConcurrency();
-    showToast(`${portal} limit set to ${newVal}.`);
-  } catch (e) { showToast(e.message, true); }
-}
-
 // ===== Passcodes =====
 let passcodeTargetPortal = null;
 function loadPasscodes() {
