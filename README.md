@@ -1,131 +1,166 @@
-Rex VMS
+# Rex VMS Backend
 
-Rex VMS is a web-based visitor management interface developed for Rex Insurance to support visitor registration, appointment handling, access workflows, and front-desk operations.
+Flask + PostgreSQL REST API for **Rex VMS**, a visitor management system modeled on the reception and security workflow at Rex Insurance. It was built as a SIWES project during my placement there.
 
-Overview
+**Live app:** https://rex-vms.vercel.app/
+**Frontend repo:** https://github.com/Luthur24/rex-vms
 
-Rex VMS provides role-specific interfaces for managing the visitor lifecycle within a corporate environment.
+---
 
-The frontend is organized around three operational portals:
+## What it does
 
-- Security
-- Front Desk
-- Admin
+The API serves three role-specific portals, each protected by its own passcode:
 
-Each portal provides functionality tailored to its operational responsibilities.
+| Portal | Who uses it | What it does |
+|---|---|---|
+| **Security** | Gate staff | Register visitors, search and edit visitor records, log a visit (department, host, purpose) |
+| **Front Desk** | Reception | Run the live visitor status board: approve, hold or reject visitors, mark them with their host, check them out |
+| **Admin** | Management | Dashboard stats, full visit history, staff roster, active sessions, login history, passcode changes |
 
-Portals
+There is also a short **AI help assistant** (Mistral) that answers questions about whatever the current portal can actually do.
 
-Security Portal
+---
 
-The Security portal is designed around visitor registration and initial visitor handling.
+## Visit lifecycle
 
-Its workflow supports activities such as:
+Front Desk can only move a visit along valid steps. Any other change is rejected with a `400`.
 
-- Visitor registration
-- Visitor information
-- Visitor search
-- Identification details
-- Initial visitor processing
+```
+pending ──► approved ──► with-host ──► checked-out
+   │
+   ├──► hold ──► approved / rejected (or stay on hold)
+   │
+   └──► rejected
+```
 
-Front Desk Portal
+---
 
-The Front Desk portal manages appointment and visitor-status workflows.
+## Authentication and sessions
 
-The interface is designed to allow front-desk staff to:
+- Login takes a **portal**, a **name** and a **passcode**.
+- Portal passcodes are stored as **hashed** values (Werkzeug), never in plain text.
+- A successful login creates a random session token (`secrets.token_urlsafe`) stored in the database and returns it to the client.
+- The client sends it on every request as `Authorization: Bearer <token>`.
+- Each endpoint checks that the token is active **and belongs to the correct portal**. A Security token cannot call a Front Desk endpoint.
+- `last_seen` is updated on each authenticated request, so the Admin portal can see who is active.
+- Every login is recorded in a login history table.
+- Passcodes are seeded from environment variables **only on first run**. After that they are managed from the Admin portal.
 
-- Confirm appointments
-- Notify hosts
-- Track visitor status
-- Manage visitor progression
-- Complete visitor checkout
+---
 
-The interface explicitly describes the Front Desk workflow as confirming appointments, notifying hosts, and tracking visitors through checkout.
+## API reference
 
-Admin Portal
+### General
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/ping` | Health check and cold-start warm-up |
 
-The Admin portal provides administrative controls for managing the visitor-management system and its operational configuration.
+### Auth
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/auth/login` | Log in with `portal`, `name`, `passcode` |
+| POST | `/api/auth/logout` | End the current session |
+| GET | `/api/auth/verify` | Check whether a token is still valid |
 
-Visitor Workflow
+### Security portal
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/visitors?search=` | List visitors, optionally searching by name, phone or ID number |
+| POST | `/api/visitors` | Register a visitor |
+| PUT | `/api/visitors/<id>` | Edit a visitor's details |
+| GET | `/api/visitors/<id>/visits` | A visitor's visit history |
+| POST | `/api/visitors/<id>/visits` | Log a new visit (starts as `pending`) |
 
-The system is designed around the visitor lifecycle:
+Visitor validation: name of at least 2 characters, an 11-digit phone number, an ID type and an ID number of at least 3 characters.
 
-Visitor Registration
-        │
-        ▼
-Appointment / Visitor Review
-        │
-        ▼
-Host Notification
-        │
-        ▼
-Visitor Approval
-        │
-        ▼
-Visitor With Host
-        │
-        ▼
-Checkout
+### Front Desk portal
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/visits` | Today's visits for the live status board |
+| PATCH | `/api/visits/<id>` | Move a visit to its next valid status |
 
-Technology Stack
+### Admin portal
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/admin/stats` | Visitors today and this month, currently inside, pending approvals, top hosts (last 7 days), recent activity |
+| GET | `/api/admin/visits?search=&limit=&offset=` | Full visit history with search and paging (max 100 per page) |
+| GET | `/api/admin/roster` | List staff roster |
+| POST | `/api/admin/roster` | Add a staff member |
+| PATCH | `/api/admin/roster/<id>` | Toggle a staff member between active and suspended |
+| GET | `/api/admin/sessions` | Currently active sessions |
+| GET | `/api/admin/login-history` | Login history (max 200 entries) |
+| POST | `/api/admin/passcode` | Change a portal's passcode (minimum 4 characters) |
 
-- HTML5
-- CSS3
-- Vanilla JavaScript
-- Responsive Web Design
-- REST API integration
-- Vercel
-- Git & GitHub
+> The staff roster is a directory only. It is not connected to portal login.
 
-Architecture
+### AI assistant
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/ai/ask` | Ask a question for a given portal. The model is given that portal's real feature list so answers stay grounded. |
 
-The frontend is maintained separately from the Flask backend.
+---
 
-┌──────────────────────┐
-│      Rex VMS UI      │
-├──────────────────────┤
-│ Security Portal      │
-│ Front Desk Portal    │
-│ Admin Portal         │
-└──────────┬───────────┘
-           │
-           │ HTTP / API
-           ▼
-┌──────────────────────┐
-│    Rex VMS Backend   │
-│        Flask         │
-└──────────┬───────────┘
-           │
-           ▼
-      PostgreSQL
+## Database
 
-Project Structure
+Tables are created automatically on startup with `CREATE TABLE IF NOT EXISTS`, so existing data is never wiped.
 
-rex-vms/
-├── index.html
-├── security-portal.html
-├── frontdesk-portal.html
-├── admin-portal.html
-└── README.md
+| Table | Purpose |
+|---|---|
+| `rexvms_portal_passcodes` | Hashed passcode per portal |
+| `rexvms_sessions` | Session tokens, activity and active flag |
+| `rexvms_login_history` | Login and logout times |
+| `rexvms_staff_roster` | Staff directory with roles and status |
+| `rexvms_visitors` | Registered visitors and ID details |
+| `rexvms_visits` | Visits linked to visitors, with host, department, status, check-in and check-out |
 
-The repository separates the entry interface from the three role-specific portal pages.
+---
 
+## Tech stack
 
-Live Application:
-https://rex-vms.vercel.app/
+- Python, Flask, Flask-CORS
+- PostgreSQL via `psycopg2`
+- Werkzeug password hashing
+- Mistral API (via `requests`)
+- Deployed on Render with Gunicorn; frontend on Vercel
 
-Project Context
+---
 
-Rex VMS was developed as an SIWES project during placement at Rex Insurance.
+## Running locally
 
-The project was built around the visitor-management workflow used within the organization and translated that operational process into a web-based system.
+```bash
+git clone https://github.com/Luthur24/rex-vms-backend.git
+cd rex-vms-backend
+pip install -r requirements.txt
+python app.py
+```
 
-Project Status
+### Environment variables
 
-Frontend MVP / Active Project
+| Variable | Required | Notes |
+|---|---|---|
+| `DATABASE_URL` | Yes | PostgreSQL connection string |
+| `FRONTEND_ORIGIN` | Yes | Allowed CORS origin, e.g. `https://rex-vms.vercel.app` |
+| `SECURITY_PASSCODE` | First run | Seeds the Security portal passcode |
+| `FRONTDESK_PASSCODE` | First run | Seeds the Front Desk portal passcode |
+| `ADMIN_PASSCODE` | First run | Seeds the Admin portal passcode |
+| `MISTRAL_API_KEY` | For AI help | Without it, `/api/ai/ask` returns a 503 |
+| `MISTRAL_MODEL` | No | Defaults to `mistral-small-latest` |
+| `PORT` | No | Defaults to `5000` |
 
-The frontend serves as the user-facing component of the Rex VMS system.
+The app refuses to start if `DATABASE_URL` or `FRONTEND_ORIGIN` is missing.
 
-Related Repository
+### Deploying on Render
 
-The server-side implementation is maintained separately in "rex-vms-backend".
+Start command: `gunicorn app:app`
+
+---
+
+## Project status
+
+Working MVP. Planned improvements: session expiry, login rate limiting, and visitor-list pagination.
+
+---
+
+## Author
+
+Built by **Israel Oshifala** ([@Luthur24](https://github.com/Luthur24)).
