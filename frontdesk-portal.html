@@ -141,9 +141,82 @@ body.theme-dark .appt-tag.scheduled { background: #12262B; }
 .guide-input-row button { background: var(--accent); color: #fff; border: none; width: 36px; border-radius: 8px; cursor: pointer; flex-shrink: 0; }
 @media (max-width: 900px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 720px) { .layout { padding: 20px; } thead th:nth-child(3), tbody td:nth-child(3) { display: none; } .search-row { width: 100%; } .detail-grid { grid-template-columns: 1fr; } }
+.pw-wrap { position: relative; }
+.pw-wrap input { padding-right: 64px; width: 100%; }
+.pw-toggle { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--accent); font-size: 12.5px; font-weight: 700; cursor: pointer; padding: 8px; }
+.switch-portal { display: block; text-align: center; margin-top: 14px; font-size: 12.5px; color: var(--text-secondary); text-decoration: none; }
+.switch-portal:hover { text-decoration: underline; }
+.login-card input { font-size: 16px; }
+body.theme-dark .login-card .sub { color: #98A0AE; }
+@media (max-width: 720px) {
+  .panel { overflow-x: auto; }
+  table { min-width: 620px; }
+}
+/* ===== Deep-navy theme + animated wave background ===== */
+body.theme-dark {
+  color-scheme: dark; background: #050B1F;
+  --bg: #0A1230; --surface: #101B42; --surface-hover: #182760; --border: #243372;
+  --text-primary: #EAF0FF; --text-secondary: #B6C3E8; --text-tertiary: #8E9DCB;
+  --accent-tint: #3A2E18; --accent-fg: #F2B866;
+  --success: #4ADE9A; --success-bg: #0E3A2E; --warn-bg: #3A2C12; --hold-bg: #17224F;
+  --danger: #FF8F86; --danger-bg: rgba(255,110,100,.15);
+  --glass: rgba(13,22,58,.58); --glass-edge: rgba(130,160,255,.20);
+  
+}
+.bg-fx { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none;
+  background: radial-gradient(120% 80% at 50% -10%, #12246B 0%, transparent 60%), linear-gradient(180deg, #060D2A 0%, #040A1E 100%); }
+.fx-orb { position: absolute; border-radius: 50%; will-change: transform; }
+.fx-orb.o1 { width: 70vmax; height: 70vmax; left: -25vmax; top: -30vmax; background: radial-gradient(closest-side, rgba(59,130,246,.32), transparent); animation: fx-orb1 32s ease-in-out infinite alternate; }
+.fx-orb.o2 { width: 60vmax; height: 60vmax; right: -22vmax; top: -18vmax; background: radial-gradient(closest-side, rgba(124,58,237,.30), transparent); animation: fx-orb2 38s ease-in-out infinite alternate; }
+@keyframes fx-orb1 { to { transform: translate3d(14vmax, 8vmax, 0) scale(1.12); } }
+@keyframes fx-orb2 { to { transform: translate3d(-12vmax, 10vmax, 0) scale(1.10); } }
+.fx-stars { position: absolute; left: 0; top: 0; width: 100%; height: 68%; }
+.fx-stars circle { fill: #CFE0FF; opacity: .2; animation: fx-tw 5s ease-in-out infinite; }
+@keyframes fx-tw { 0%, 100% { opacity: .12; } 50% { opacity: .9; } }
+.fx-bob { position: absolute; left: 0; right: 0; bottom: -24px; animation: fx-bob 12s ease-in-out infinite alternate; will-change: transform; }
+@keyframes fx-bob { to { transform: translate3d(0, -14px, 0); } }
+.fx-wave { position: absolute; left: 0; bottom: 0; width: 200%; height: 100%; animation: fx-drift 60s linear infinite; will-change: transform; }
+.fx-wave.rev { animation-direction: reverse; }
+.fx-wave svg { display: block; width: 100%; height: 100%; }
+.fx-line { fill: none; stroke-width: 1.6; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+@keyframes fx-drift { to { transform: translate3d(-50%, 0, 0); } }
+@media (prefers-reduced-motion: reduce) { .bg-fx * { animation: none !important; } }
+
+/* Frosted navy panels */
+.top-bar { background: rgba(6,12,36,.55); border-bottom-color: var(--glass-edge); -webkit-backdrop-filter: saturate(140%) blur(12px); backdrop-filter: saturate(140%) blur(12px); }
+.sidebar { background: rgba(6,12,36,.42); border-right-color: var(--glass-edge); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.panel, .stat-box, .stat-card, .report-card, .session-card, .login-card {
+  background: var(--glass); border-color: var(--glass-edge);
+  box-shadow: 0 18px 50px -26px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.04);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+}
+.login-card { box-shadow: 0 30px 80px -30px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.03) inset; }
+.fullpage { background: rgba(6,12,34,.82); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.modal-overlay { background: rgba(3,6,20,.62); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+.modal, .guide-panel { box-shadow: 0 28px 70px -24px rgba(0,0,0,.75); }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .top-bar, .sidebar, .panel, .stat-box, .stat-card, .report-card, .session-card, .login-card { background: rgba(10,18,48,.92); }
+  .fullpage { background: #060C22; }
+}
+
+/* Light-on-dark text for items that used the accent colour as text */
+body.theme-dark :is(.count-chip, .edit-btn, .appt-toggle button.active, .detail-avatar, .visit-status-cell.pending,
+  .visit-status-cell.hold, .visit-status-cell.approved, .visit-status-cell.with-host, .recent-tag, .guide-quick button,
+  .pw-toggle, .appt-tag.walkin, .status-pill.pending, .modal-avatar, .nav-item.active, .role-pill.admin, .icon-btn,
+  .logs-count-chip, .btn-load-more) { color: var(--accent-fg); }
+body.theme-dark :is(.appt-tag.scheduled, .status-pill.approved, .role-pill.security, .visit-status-pill.with-host,
+  .visit-status-pill.approved, .visit-status-pill.pending, .visit-status-pill.hold) { background: #0E3550; color: #7DD3E8; }
+
+@media (max-width: 720px) {
+  .top-bar { padding: 12px 16px; gap: 10px; }
+  .top-right { gap: 8px; }
+  #clock { display: none; }
+  .top-left .titles .portal { white-space: nowrap; }
+}
 </style>
 </head>
 <body class="theme-dark">
+<div class="bg-fx" aria-hidden="true"><div class="fx-orb o1"></div><div class="fx-orb o2"></div><svg class="fx-stars" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice"><circle cx="324" cy="91" r="1.3" style="animation-duration:3.3s;animation-delay:-3.8s"/><circle cx="366" cy="35" r="1.2" style="animation-duration:3.1s;animation-delay:-3.0s"/><circle cx="70" cy="54" r="1.1" style="animation-duration:6.3s;animation-delay:-0.9s"/><circle cx="223" cy="376" r="1.6" style="animation-duration:5.3s;animation-delay:-2.8s"/><circle cx="976" cy="28" r="1.5" style="animation-duration:4.2s;animation-delay:-1.0s"/><circle cx="118" cy="185" r="1.4" style="animation-duration:3.7s;animation-delay:-4.1s"/><circle cx="639" cy="223" r="1.2" style="animation-duration:3.3s;animation-delay:-0.4s"/><circle cx="206" cy="408" r="1.1" style="animation-duration:4.3s;animation-delay:-4.1s"/><circle cx="453" cy="180" r="1.4" style="animation-duration:5.8s;animation-delay:-1.7s"/><circle cx="574" cy="315" r="1.5" style="animation-duration:5.9s;animation-delay:-2.0s"/><circle cx="980" cy="71" r="1.1" style="animation-duration:6.0s;animation-delay:-1.1s"/><circle cx="489" cy="24" r="1.3" style="animation-duration:6.1s;animation-delay:-4.0s"/><circle cx="875" cy="188" r="1.3" style="animation-duration:5.4s;animation-delay:-4.1s"/><circle cx="456" cy="504" r="1.6" style="animation-duration:4.9s;animation-delay:-4.6s"/><circle cx="61" cy="421" r="1.3" style="animation-duration:7.0s;animation-delay:-5.8s"/><circle cx="285" cy="231" r="1.3" style="animation-duration:3.1s;animation-delay:-3.2s"/><circle cx="168" cy="70" r="0.8" style="animation-duration:6.1s;animation-delay:-0.9s"/><circle cx="248" cy="235" r="1.5" style="animation-duration:3.3s;animation-delay:-3.1s"/><circle cx="549" cy="530" r="1.4" style="animation-duration:6.5s;animation-delay:-1.9s"/><circle cx="415" cy="215" r="1.5" style="animation-duration:6.8s;animation-delay:-1.1s"/><circle cx="176" cy="139" r="0.9" style="animation-duration:4.9s;animation-delay:-4.1s"/><circle cx="263" cy="2" r="1.1" style="animation-duration:4.5s;animation-delay:-4.0s"/><circle cx="953" cy="414" r="1.2" style="animation-duration:5.5s;animation-delay:-4.7s"/><circle cx="54" cy="540" r="1.4" style="animation-duration:6.5s;animation-delay:-5.6s"/><circle cx="392" cy="239" r="0.8" style="animation-duration:5.5s;animation-delay:-0.4s"/><circle cx="67" cy="125" r="0.8" style="animation-duration:4.4s;animation-delay:-0.4s"/><circle cx="0" cy="91" r="0.8" style="animation-duration:4.5s;animation-delay:-0.2s"/><circle cx="874" cy="368" r="0.8" style="animation-duration:4.0s;animation-delay:-2.4s"/><circle cx="364" cy="74" r="1.5" style="animation-duration:7.0s;animation-delay:-3.3s"/><circle cx="484" cy="52" r="0.8" style="animation-duration:4.4s;animation-delay:-1.9s"/><circle cx="829" cy="97" r="0.7" style="animation-duration:6.8s;animation-delay:-3.7s"/><circle cx="147" cy="326" r="0.7" style="animation-duration:5.1s;animation-delay:-6.8s"/><circle cx="863" cy="418" r="0.9" style="animation-duration:4.5s;animation-delay:-1.2s"/><circle cx="772" cy="320" r="1.4" style="animation-duration:4.3s;animation-delay:-1.6s"/><circle cx="812" cy="591" r="1.5" style="animation-duration:6.2s;animation-delay:-5.7s"/><circle cx="740" cy="136" r="1.2" style="animation-duration:4.4s;animation-delay:-0.2s"/><circle cx="28" cy="168" r="0.9" style="animation-duration:5.8s;animation-delay:-6.7s"/><circle cx="447" cy="562" r="1.6" style="animation-duration:6.8s;animation-delay:-2.6s"/><circle cx="220" cy="136" r="0.9" style="animation-duration:3.8s;animation-delay:-4.4s"/><circle cx="900" cy="504" r="1.1" style="animation-duration:5.6s;animation-delay:-5.6s"/><circle cx="85" cy="396" r="1.5" style="animation-duration:6.1s;animation-delay:-5.3s"/><circle cx="478" cy="107" r="1.4" style="animation-duration:4.3s;animation-delay:-5.6s"/><circle cx="972" cy="238" r="1.1" style="animation-duration:6.8s;animation-delay:-5.1s"/><circle cx="170" cy="76" r="0.8" style="animation-duration:6.6s;animation-delay:-5.6s"/><circle cx="146" cy="496" r="1.6" style="animation-duration:5.6s;animation-delay:-2.5s"/><circle cx="549" cy="79" r="0.7" style="animation-duration:6.9s;animation-delay:-4.5s"/></svg><div class="fx-bob" style="height:calc(62vh + 24px);animation-duration:14s;animation-delay:-3s"><div class="fx-wave" style="animation-duration:90s"><svg viewBox="0 0 2880 320" preserveAspectRatio="none"><defs><linearGradient id="fxg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2B3FBF" stop-opacity="0.55"/><stop offset="1" stop-color="#0A1448" stop-opacity="0.9"/></linearGradient></defs><path d="M0,91.5 L18,94.2 L36,95.9 L54,96.7 L72,96.5 L90,95.7 L108,94.1 L126,92.0 L144,89.6 L162,86.9 L180,84.2 L198,81.5 L216,78.9 L234,76.5 L252,74.4 L270,72.6 L288,71.0 L306,69.6 L324,68.4 L342,67.3 L360,66.3 L378,65.1 L396,63.9 L414,62.5 L432,61.0 L450,59.2 L468,57.3 L486,55.3 L504,53.2 L522,51.2 L540,49.4 L558,47.9 L576,46.9 L594,46.5 L612,46.7 L630,47.7 L648,49.5 L666,52.2 L684,55.7 L702,60.0 L720,65.0 L738,70.5 L756,76.4 L774,82.4 L792,88.3 L810,93.9 L828,98.9 L846,103.1 L864,106.4 L882,108.5 L900,109.3 L918,108.8 L936,106.9 L954,103.6 L972,99.2 L990,93.6 L1008,87.1 L1026,79.9 L1044,72.4 L1062,64.7 L1080,57.2 L1098,50.1 L1116,43.8 L1134,38.4 L1152,34.2 L1170,31.3 L1188,29.7 L1206,29.6 L1224,30.8 L1242,33.4 L1260,37.1 L1278,41.8 L1296,47.3 L1314,53.4 L1332,59.8 L1350,66.2 L1368,72.4 L1386,78.2 L1404,83.5 L1422,87.9 L1440,91.5 L1458,94.2 L1476,95.9 L1494,96.7 L1512,96.5 L1530,95.7 L1548,94.1 L1566,92.0 L1584,89.6 L1602,86.9 L1620,84.2 L1638,81.5 L1656,78.9 L1674,76.5 L1692,74.4 L1710,72.6 L1728,71.0 L1746,69.6 L1764,68.4 L1782,67.3 L1800,66.3 L1818,65.1 L1836,63.9 L1854,62.5 L1872,61.0 L1890,59.2 L1908,57.3 L1926,55.3 L1944,53.2 L1962,51.2 L1980,49.4 L1998,47.9 L2016,46.9 L2034,46.5 L2052,46.7 L2070,47.7 L2088,49.5 L2106,52.2 L2124,55.7 L2142,60.0 L2160,65.0 L2178,70.5 L2196,76.4 L2214,82.4 L2232,88.3 L2250,93.9 L2268,98.9 L2286,103.1 L2304,106.4 L2322,108.5 L2340,109.3 L2358,108.8 L2376,106.9 L2394,103.6 L2412,99.2 L2430,93.6 L2448,87.1 L2466,79.9 L2484,72.4 L2502,64.7 L2520,57.2 L2538,50.1 L2556,43.8 L2574,38.4 L2592,34.2 L2610,31.3 L2628,29.7 L2646,29.6 L2664,30.8 L2682,33.4 L2700,37.1 L2718,41.8 L2736,47.3 L2754,53.4 L2772,59.8 L2790,66.2 L2808,72.4 L2826,78.2 L2844,83.5 L2862,87.9 L2880,91.5 L2880,320 L0,320 Z" fill="url(#fxg1)"/><path class="fx-line" d="M0,91.5 L18,94.2 L36,95.9 L54,96.7 L72,96.5 L90,95.7 L108,94.1 L126,92.0 L144,89.6 L162,86.9 L180,84.2 L198,81.5 L216,78.9 L234,76.5 L252,74.4 L270,72.6 L288,71.0 L306,69.6 L324,68.4 L342,67.3 L360,66.3 L378,65.1 L396,63.9 L414,62.5 L432,61.0 L450,59.2 L468,57.3 L486,55.3 L504,53.2 L522,51.2 L540,49.4 L558,47.9 L576,46.9 L594,46.5 L612,46.7 L630,47.7 L648,49.5 L666,52.2 L684,55.7 L702,60.0 L720,65.0 L738,70.5 L756,76.4 L774,82.4 L792,88.3 L810,93.9 L828,98.9 L846,103.1 L864,106.4 L882,108.5 L900,109.3 L918,108.8 L936,106.9 L954,103.6 L972,99.2 L990,93.6 L1008,87.1 L1026,79.9 L1044,72.4 L1062,64.7 L1080,57.2 L1098,50.1 L1116,43.8 L1134,38.4 L1152,34.2 L1170,31.3 L1188,29.7 L1206,29.6 L1224,30.8 L1242,33.4 L1260,37.1 L1278,41.8 L1296,47.3 L1314,53.4 L1332,59.8 L1350,66.2 L1368,72.4 L1386,78.2 L1404,83.5 L1422,87.9 L1440,91.5 L1458,94.2 L1476,95.9 L1494,96.7 L1512,96.5 L1530,95.7 L1548,94.1 L1566,92.0 L1584,89.6 L1602,86.9 L1620,84.2 L1638,81.5 L1656,78.9 L1674,76.5 L1692,74.4 L1710,72.6 L1728,71.0 L1746,69.6 L1764,68.4 L1782,67.3 L1800,66.3 L1818,65.1 L1836,63.9 L1854,62.5 L1872,61.0 L1890,59.2 L1908,57.3 L1926,55.3 L1944,53.2 L1962,51.2 L1980,49.4 L1998,47.9 L2016,46.9 L2034,46.5 L2052,46.7 L2070,47.7 L2088,49.5 L2106,52.2 L2124,55.7 L2142,60.0 L2160,65.0 L2178,70.5 L2196,76.4 L2214,82.4 L2232,88.3 L2250,93.9 L2268,98.9 L2286,103.1 L2304,106.4 L2322,108.5 L2340,109.3 L2358,108.8 L2376,106.9 L2394,103.6 L2412,99.2 L2430,93.6 L2448,87.1 L2466,79.9 L2484,72.4 L2502,64.7 L2520,57.2 L2538,50.1 L2556,43.8 L2574,38.4 L2592,34.2 L2610,31.3 L2628,29.7 L2646,29.6 L2664,30.8 L2682,33.4 L2700,37.1 L2718,41.8 L2736,47.3 L2754,53.4 L2772,59.8 L2790,66.2 L2808,72.4 L2826,78.2 L2844,83.5 L2862,87.9 L2880,91.5" stroke="('#7C93FF', 0.35)" stroke-opacity="1"/></svg></div></div><div class="fx-bob" style="height:calc(52vh + 24px);animation-duration:12s;animation-delay:-6s"><div class="fx-wave rev" style="animation-duration:64s"><svg viewBox="0 0 2880 320" preserveAspectRatio="none"><defs><linearGradient id="fxg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3A56E8" stop-opacity="0.45"/><stop offset="1" stop-color="#0E1B5E" stop-opacity="0.9"/></linearGradient></defs><path d="M0,124.4 L18,124.0 L36,120.9 L54,115.3 L72,107.6 L90,98.3 L108,88.3 L126,78.7 L144,70.3 L162,64.2 L180,60.8 L198,60.6 L216,63.4 L234,68.9 L252,76.4 L270,85.1 L288,94.1 L306,102.4 L324,109.3 L342,114.4 L360,117.3 L378,118.1 L396,117.2 L414,115.0 L432,112.2 L450,109.1 L468,106.4 L486,104.3 L504,102.8 L522,101.8 L540,101.1 L558,100.1 L576,98.6 L594,96.2 L612,92.7 L630,88.3 L648,83.2 L666,77.9 L684,73.1 L702,69.4 L720,67.6 L738,68.0 L756,71.1 L774,76.7 L792,84.4 L810,93.7 L828,103.7 L846,113.3 L864,121.7 L882,127.8 L900,131.2 L918,131.4 L936,128.6 L954,123.1 L972,115.6 L990,106.9 L1008,97.9 L1026,89.6 L1044,82.7 L1062,77.6 L1080,74.7 L1098,73.9 L1116,74.8 L1134,77.0 L1152,79.8 L1170,82.9 L1188,85.6 L1206,87.7 L1224,89.2 L1242,90.2 L1260,90.9 L1278,91.9 L1296,93.4 L1314,95.8 L1332,99.3 L1350,103.7 L1368,108.8 L1386,114.1 L1404,118.9 L1422,122.6 L1440,124.4 L1458,124.0 L1476,120.9 L1494,115.3 L1512,107.6 L1530,98.3 L1548,88.3 L1566,78.7 L1584,70.3 L1602,64.2 L1620,60.8 L1638,60.6 L1656,63.4 L1674,68.9 L1692,76.4 L1710,85.1 L1728,94.1 L1746,102.4 L1764,109.3 L1782,114.4 L1800,117.3 L1818,118.1 L1836,117.2 L1854,115.0 L1872,112.2 L1890,109.1 L1908,106.4 L1926,104.3 L1944,102.8 L1962,101.8 L1980,101.1 L1998,100.1 L2016,98.6 L2034,96.2 L2052,92.7 L2070,88.3 L2088,83.2 L2106,77.9 L2124,73.1 L2142,69.4 L2160,67.6 L2178,68.0 L2196,71.1 L2214,76.7 L2232,84.4 L2250,93.7 L2268,103.7 L2286,113.3 L2304,121.7 L2322,127.8 L2340,131.2 L2358,131.4 L2376,128.6 L2394,123.1 L2412,115.6 L2430,106.9 L2448,97.9 L2466,89.6 L2484,82.7 L2502,77.6 L2520,74.7 L2538,73.9 L2556,74.8 L2574,77.0 L2592,79.8 L2610,82.9 L2628,85.6 L2646,87.7 L2664,89.2 L2682,90.2 L2700,90.9 L2718,91.9 L2736,93.4 L2754,95.8 L2772,99.3 L2790,103.7 L2808,108.8 L2826,114.1 L2844,118.9 L2862,122.6 L2880,124.4 L2880,320 L0,320 Z" fill="url(#fxg2)"/><path class="fx-line" d="M0,124.4 L18,124.0 L36,120.9 L54,115.3 L72,107.6 L90,98.3 L108,88.3 L126,78.7 L144,70.3 L162,64.2 L180,60.8 L198,60.6 L216,63.4 L234,68.9 L252,76.4 L270,85.1 L288,94.1 L306,102.4 L324,109.3 L342,114.4 L360,117.3 L378,118.1 L396,117.2 L414,115.0 L432,112.2 L450,109.1 L468,106.4 L486,104.3 L504,102.8 L522,101.8 L540,101.1 L558,100.1 L576,98.6 L594,96.2 L612,92.7 L630,88.3 L648,83.2 L666,77.9 L684,73.1 L702,69.4 L720,67.6 L738,68.0 L756,71.1 L774,76.7 L792,84.4 L810,93.7 L828,103.7 L846,113.3 L864,121.7 L882,127.8 L900,131.2 L918,131.4 L936,128.6 L954,123.1 L972,115.6 L990,106.9 L1008,97.9 L1026,89.6 L1044,82.7 L1062,77.6 L1080,74.7 L1098,73.9 L1116,74.8 L1134,77.0 L1152,79.8 L1170,82.9 L1188,85.6 L1206,87.7 L1224,89.2 L1242,90.2 L1260,90.9 L1278,91.9 L1296,93.4 L1314,95.8 L1332,99.3 L1350,103.7 L1368,108.8 L1386,114.1 L1404,118.9 L1422,122.6 L1440,124.4 L1458,124.0 L1476,120.9 L1494,115.3 L1512,107.6 L1530,98.3 L1548,88.3 L1566,78.7 L1584,70.3 L1602,64.2 L1620,60.8 L1638,60.6 L1656,63.4 L1674,68.9 L1692,76.4 L1710,85.1 L1728,94.1 L1746,102.4 L1764,109.3 L1782,114.4 L1800,117.3 L1818,118.1 L1836,117.2 L1854,115.0 L1872,112.2 L1890,109.1 L1908,106.4 L1926,104.3 L1944,102.8 L1962,101.8 L1980,101.1 L1998,100.1 L2016,98.6 L2034,96.2 L2052,92.7 L2070,88.3 L2088,83.2 L2106,77.9 L2124,73.1 L2142,69.4 L2160,67.6 L2178,68.0 L2196,71.1 L2214,76.7 L2232,84.4 L2250,93.7 L2268,103.7 L2286,113.3 L2304,121.7 L2322,127.8 L2340,131.2 L2358,131.4 L2376,128.6 L2394,123.1 L2412,115.6 L2430,106.9 L2448,97.9 L2466,89.6 L2484,82.7 L2502,77.6 L2520,74.7 L2538,73.9 L2556,74.8 L2574,77.0 L2592,79.8 L2610,82.9 L2628,85.6 L2646,87.7 L2664,89.2 L2682,90.2 L2700,90.9 L2718,91.9 L2736,93.4 L2754,95.8 L2772,99.3 L2790,103.7 L2808,108.8 L2826,114.1 L2844,118.9 L2862,122.6 L2880,124.4" stroke="('#6D8BFF', 0.45)" stroke-opacity="1"/></svg></div></div><div class="fx-bob" style="height:calc(43vh + 24px);animation-duration:10s;animation-delay:-9s"><div class="fx-wave" style="animation-duration:48s"><svg viewBox="0 0 2880 320" preserveAspectRatio="none"><defs><linearGradient id="fxg3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4F7BFF" stop-opacity="0.3"/><stop offset="1" stop-color="#101F6E" stop-opacity="0.75"/></linearGradient></defs><path d="M0,143.8 L18,139.9 L36,134.0 L54,127.9 L72,122.7 L90,119.2 L108,117.4 L126,116.6 L144,115.7 L162,114.0 L180,111.1 L198,107.0 L216,102.9 L234,100.0 L252,99.7 L270,102.9 L288,109.7 L306,119.3 L324,130.1 L342,140.1 L360,147.2 L378,150.0 L396,147.8 L414,141.3 L432,131.8 L450,121.3 L468,111.9 L486,105.0 L504,101.6 L522,101.5 L540,103.8 L558,107.2 L576,110.4 L594,112.7 L612,113.8 L630,114.2 L648,115.0 L666,117.0 L684,120.8 L702,126.6 L720,133.5 L738,140.0 L756,144.6 L774,145.8 L792,142.6 L810,135.3 L828,124.9 L846,113.3 L864,102.6 L882,95.0 L900,91.7 L918,93.0 L936,98.4 L954,106.3 L972,115.0 L990,122.6 L1008,128.1 L1026,130.9 L1044,131.5 L1062,130.9 L1080,130.1 L1098,130.0 L1116,130.9 L1134,132.4 L1152,133.5 L1170,133.2 L1188,130.4 L1206,124.8 L1224,116.7 L1242,107.5 L1260,98.9 L1278,92.9 L1296,90.9 L1314,93.7 L1332,100.9 L1350,111.3 L1368,122.8 L1386,133.2 L1404,140.8 L1422,144.4 L1440,143.8 L1458,139.9 L1476,134.0 L1494,127.9 L1512,122.7 L1530,119.2 L1548,117.4 L1566,116.6 L1584,115.7 L1602,114.0 L1620,111.1 L1638,107.0 L1656,102.9 L1674,100.0 L1692,99.7 L1710,102.9 L1728,109.7 L1746,119.3 L1764,130.1 L1782,140.1 L1800,147.2 L1818,150.0 L1836,147.8 L1854,141.3 L1872,131.8 L1890,121.3 L1908,111.9 L1926,105.0 L1944,101.6 L1962,101.5 L1980,103.8 L1998,107.2 L2016,110.4 L2034,112.7 L2052,113.8 L2070,114.2 L2088,115.0 L2106,117.0 L2124,120.8 L2142,126.6 L2160,133.5 L2178,140.0 L2196,144.6 L2214,145.8 L2232,142.6 L2250,135.3 L2268,124.9 L2286,113.3 L2304,102.6 L2322,95.0 L2340,91.7 L2358,93.0 L2376,98.4 L2394,106.3 L2412,115.0 L2430,122.6 L2448,128.1 L2466,130.9 L2484,131.5 L2502,130.9 L2520,130.1 L2538,130.0 L2556,130.9 L2574,132.4 L2592,133.5 L2610,133.2 L2628,130.4 L2646,124.8 L2664,116.7 L2682,107.5 L2700,98.9 L2718,92.9 L2736,90.9 L2754,93.7 L2772,100.9 L2790,111.3 L2808,122.8 L2826,133.2 L2844,140.8 L2862,144.4 L2880,143.8 L2880,320 L0,320 Z" fill="url(#fxg3)"/><path class="fx-line" d="M0,143.8 L18,139.9 L36,134.0 L54,127.9 L72,122.7 L90,119.2 L108,117.4 L126,116.6 L144,115.7 L162,114.0 L180,111.1 L198,107.0 L216,102.9 L234,100.0 L252,99.7 L270,102.9 L288,109.7 L306,119.3 L324,130.1 L342,140.1 L360,147.2 L378,150.0 L396,147.8 L414,141.3 L432,131.8 L450,121.3 L468,111.9 L486,105.0 L504,101.6 L522,101.5 L540,103.8 L558,107.2 L576,110.4 L594,112.7 L612,113.8 L630,114.2 L648,115.0 L666,117.0 L684,120.8 L702,126.6 L720,133.5 L738,140.0 L756,144.6 L774,145.8 L792,142.6 L810,135.3 L828,124.9 L846,113.3 L864,102.6 L882,95.0 L900,91.7 L918,93.0 L936,98.4 L954,106.3 L972,115.0 L990,122.6 L1008,128.1 L1026,130.9 L1044,131.5 L1062,130.9 L1080,130.1 L1098,130.0 L1116,130.9 L1134,132.4 L1152,133.5 L1170,133.2 L1188,130.4 L1206,124.8 L1224,116.7 L1242,107.5 L1260,98.9 L1278,92.9 L1296,90.9 L1314,93.7 L1332,100.9 L1350,111.3 L1368,122.8 L1386,133.2 L1404,140.8 L1422,144.4 L1440,143.8 L1458,139.9 L1476,134.0 L1494,127.9 L1512,122.7 L1530,119.2 L1548,117.4 L1566,116.6 L1584,115.7 L1602,114.0 L1620,111.1 L1638,107.0 L1656,102.9 L1674,100.0 L1692,99.7 L1710,102.9 L1728,109.7 L1746,119.3 L1764,130.1 L1782,140.1 L1800,147.2 L1818,150.0 L1836,147.8 L1854,141.3 L1872,131.8 L1890,121.3 L1908,111.9 L1926,105.0 L1944,101.6 L1962,101.5 L1980,103.8 L1998,107.2 L2016,110.4 L2034,112.7 L2052,113.8 L2070,114.2 L2088,115.0 L2106,117.0 L2124,120.8 L2142,126.6 L2160,133.5 L2178,140.0 L2196,144.6 L2214,145.8 L2232,142.6 L2250,135.3 L2268,124.9 L2286,113.3 L2304,102.6 L2322,95.0 L2340,91.7 L2358,93.0 L2376,98.4 L2394,106.3 L2412,115.0 L2430,122.6 L2448,128.1 L2466,130.9 L2484,131.5 L2502,130.9 L2520,130.1 L2538,130.0 L2556,130.9 L2574,132.4 L2592,133.5 L2610,133.2 L2628,130.4 L2646,124.8 L2664,116.7 L2682,107.5 L2700,98.9 L2718,92.9 L2736,90.9 L2754,93.7 L2772,100.9 L2790,111.3 L2808,122.8 L2826,133.2 L2844,140.8 L2862,144.4 L2880,143.8" stroke="('#8FB0FF', 0.5)" stroke-opacity="1"/></svg></div></div><div class="fx-bob" style="height:calc(33vh + 24px);animation-duration:9s;animation-delay:-12s"><div class="fx-wave rev" style="animation-duration:36s"><svg viewBox="0 0 2880 320" preserveAspectRatio="none"><defs><linearGradient id="fxg4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0E2F7A" stop-opacity="0.95"/><stop offset="1" stop-color="#050B22" stop-opacity="1.0"/></linearGradient></defs><path d="M0,161.1 L18,165.8 L36,165.9 L54,162.7 L72,158.6 L90,155.5 L108,154.0 L126,153.6 L144,152.4 L162,149.0 L180,143.2 L198,136.3 L216,130.8 L234,129.4 L252,133.5 L270,142.7 L288,154.3 L306,164.9 L324,171.3 L342,171.9 L360,167.0 L378,159.2 L396,151.3 L414,145.6 L432,143.1 L450,142.8 L468,143.1 L486,142.3 L504,140.1 L522,137.5 L540,136.5 L558,139.2 L576,146.0 L594,155.8 L612,165.7 L630,172.5 L648,173.6 L666,168.5 L684,159.0 L702,148.0 L720,138.9 L738,134.2 L756,134.1 L774,137.3 L792,141.4 L810,144.5 L828,146.0 L846,146.4 L864,147.6 L882,151.0 L900,156.8 L918,163.7 L936,169.2 L954,170.6 L972,166.5 L990,157.3 L1008,145.7 L1026,135.1 L1044,128.7 L1062,128.1 L1080,133.0 L1098,140.8 L1116,148.7 L1134,154.4 L1152,156.9 L1170,157.2 L1188,156.9 L1206,157.7 L1224,159.9 L1242,162.5 L1260,163.5 L1278,160.8 L1296,154.0 L1314,144.2 L1332,134.3 L1350,127.5 L1368,126.4 L1386,131.5 L1404,141.0 L1422,152.0 L1440,161.1 L1458,165.8 L1476,165.9 L1494,162.7 L1512,158.6 L1530,155.5 L1548,154.0 L1566,153.6 L1584,152.4 L1602,149.0 L1620,143.2 L1638,136.3 L1656,130.8 L1674,129.4 L1692,133.5 L1710,142.7 L1728,154.3 L1746,164.9 L1764,171.3 L1782,171.9 L1800,167.0 L1818,159.2 L1836,151.3 L1854,145.6 L1872,143.1 L1890,142.8 L1908,143.1 L1926,142.3 L1944,140.1 L1962,137.5 L1980,136.5 L1998,139.2 L2016,146.0 L2034,155.8 L2052,165.7 L2070,172.5 L2088,173.6 L2106,168.5 L2124,159.0 L2142,148.0 L2160,138.9 L2178,134.2 L2196,134.1 L2214,137.3 L2232,141.4 L2250,144.5 L2268,146.0 L2286,146.4 L2304,147.6 L2322,151.0 L2340,156.8 L2358,163.7 L2376,169.2 L2394,170.6 L2412,166.5 L2430,157.3 L2448,145.7 L2466,135.1 L2484,128.7 L2502,128.1 L2520,133.0 L2538,140.8 L2556,148.7 L2574,154.4 L2592,156.9 L2610,157.2 L2628,156.9 L2646,157.7 L2664,159.9 L2682,162.5 L2700,163.5 L2718,160.8 L2736,154.0 L2754,144.2 L2772,134.3 L2790,127.5 L2808,126.4 L2826,131.5 L2844,141.0 L2862,152.0 L2880,161.1 L2880,320 L0,320 Z" fill="url(#fxg4)"/><path class="fx-line" d="M0,161.1 L18,165.8 L36,165.9 L54,162.7 L72,158.6 L90,155.5 L108,154.0 L126,153.6 L144,152.4 L162,149.0 L180,143.2 L198,136.3 L216,130.8 L234,129.4 L252,133.5 L270,142.7 L288,154.3 L306,164.9 L324,171.3 L342,171.9 L360,167.0 L378,159.2 L396,151.3 L414,145.6 L432,143.1 L450,142.8 L468,143.1 L486,142.3 L504,140.1 L522,137.5 L540,136.5 L558,139.2 L576,146.0 L594,155.8 L612,165.7 L630,172.5 L648,173.6 L666,168.5 L684,159.0 L702,148.0 L720,138.9 L738,134.2 L756,134.1 L774,137.3 L792,141.4 L810,144.5 L828,146.0 L846,146.4 L864,147.6 L882,151.0 L900,156.8 L918,163.7 L936,169.2 L954,170.6 L972,166.5 L990,157.3 L1008,145.7 L1026,135.1 L1044,128.7 L1062,128.1 L1080,133.0 L1098,140.8 L1116,148.7 L1134,154.4 L1152,156.9 L1170,157.2 L1188,156.9 L1206,157.7 L1224,159.9 L1242,162.5 L1260,163.5 L1278,160.8 L1296,154.0 L1314,144.2 L1332,134.3 L1350,127.5 L1368,126.4 L1386,131.5 L1404,141.0 L1422,152.0 L1440,161.1 L1458,165.8 L1476,165.9 L1494,162.7 L1512,158.6 L1530,155.5 L1548,154.0 L1566,153.6 L1584,152.4 L1602,149.0 L1620,143.2 L1638,136.3 L1656,130.8 L1674,129.4 L1692,133.5 L1710,142.7 L1728,154.3 L1746,164.9 L1764,171.3 L1782,171.9 L1800,167.0 L1818,159.2 L1836,151.3 L1854,145.6 L1872,143.1 L1890,142.8 L1908,143.1 L1926,142.3 L1944,140.1 L1962,137.5 L1980,136.5 L1998,139.2 L2016,146.0 L2034,155.8 L2052,165.7 L2070,172.5 L2088,173.6 L2106,168.5 L2124,159.0 L2142,148.0 L2160,138.9 L2178,134.2 L2196,134.1 L2214,137.3 L2232,141.4 L2250,144.5 L2268,146.0 L2286,146.4 L2304,147.6 L2322,151.0 L2340,156.8 L2358,163.7 L2376,169.2 L2394,170.6 L2412,166.5 L2430,157.3 L2448,145.7 L2466,135.1 L2484,128.7 L2502,128.1 L2520,133.0 L2538,140.8 L2556,148.7 L2574,154.4 L2592,156.9 L2610,157.2 L2628,156.9 L2646,157.7 L2664,159.9 L2682,162.5 L2700,163.5 L2718,160.8 L2736,154.0 L2754,144.2 L2772,134.3 L2790,127.5 L2808,126.4 L2826,131.5 L2844,141.0 L2862,152.0 L2880,161.1" stroke="#60A5FA" stroke-opacity=".65"/></svg></div></div></div>
 <!-- ===================== LOGIN GATE ===================== -->
 <div class="login-gate" id="loginGate">
 <div class="login-card">
@@ -152,8 +225,12 @@ body.theme-dark .appt-tag.scheduled { background: #12262B; }
 <div class="sub">REX Insurance · Enter the front desk passcode to continue</div>
 <div class="login-error" id="loginError"></div>
 <div class="field"><label>Your name</label><input type="text" id="loginName" placeholder="e.g. Blessing Adeyemi"></div>
-<div class="field"><label>Passcode</label><input type="password" id="loginPasscode" placeholder="Enter passcode"></div>
+<div class="field"><label>Passcode</label><div class="pw-wrap">
+  <input type="password" id="loginPasscode" placeholder="Enter passcode" autocomplete="current-password">
+  <button type="button" class="pw-toggle" id="pwToggle" aria-label="Show or hide passcode">Show</button>
+</div></div>
 <button class="btn-primary" id="loginBtn" style="width:100%;">Log In</button>
+<a class="switch-portal" href="index.html">Not this portal? Choose another</a>
 </div>
 </div>
 <!-- ===================== APP SHELL ===================== -->
@@ -281,20 +358,47 @@ async function warmUp() {
   showLoginGate();
 })();
 
-document.getElementById("loginBtn").addEventListener("click", async () => {
+async function doLogin() {
+  const btn = document.getElementById("loginBtn");
   const name = document.getElementById("loginName").value.trim();
   const passcode = document.getElementById("loginPasscode").value;
   const errBox = document.getElementById("loginError");
   errBox.classList.remove("show");
-  if (!name || !passcode) { errBox.textContent = "Enter your name and the passcode."; errBox.classList.add("show"); return; }
+  if (!name || !passcode) {
+    errBox.textContent = "Enter your name and the passcode.";
+    errBox.classList.add("show");
+    return;
+  }
+  btn.disabled = true; btn.textContent = "Logging in...";
   try {
-    const res = await fetch(`${API_BASE}/auth/login`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ portal: PORTAL, passcode, name }) });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Login failed.");
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ portal: PORTAL, passcode, name })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "Server is waking up. Wait a few seconds and try again.");
     authToken = data.token; userName = data.name;
-    localStorage.setItem(TOKEN_KEY, authToken); localStorage.setItem(NAME_KEY, userName);
+    localStorage.setItem(TOKEN_KEY, authToken);
+    localStorage.setItem(NAME_KEY, userName);
+    document.getElementById("loginPasscode").value = "";
     showAppShell();
-  } catch (e) { errBox.textContent = e.message; errBox.classList.add("show"); }
+  } catch (e) {
+    errBox.textContent = e.message.includes("fetch") ? "Can't reach the server. Check your connection." : e.message;
+    errBox.classList.add("show");
+  } finally {
+    btn.disabled = false; btn.textContent = "Log In";
+  }
+}
+document.getElementById("loginBtn").addEventListener("click", doLogin);
+["loginName", "loginPasscode"].forEach(id =>
+  document.getElementById(id).addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); })
+);
+document.getElementById("pwToggle").addEventListener("click", () => {
+  const input = document.getElementById("loginPasscode");
+  const show = input.type === "password";
+  input.type = show ? "text" : "password";
+  document.getElementById("pwToggle").textContent = show ? "Hide" : "Show";
 });
 
 document.getElementById("logoutBtn").addEventListener("click", async () => {
@@ -309,7 +413,10 @@ function initials(name) { return name.split(" ").map(p => p[0]).join("").slice(0
 function formatTime(str) { const d = new Date(str); return d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }); }
 const statusMeta = { pending: "Pending Review", hold: "On Hold", approved: "Approved", "with-host": "With Host", rejected: "Rejected", "checked-out": "Checked Out" };
 
+let portalReady = false;
 function initPortal() {
+  if (portalReady) { loadVisits(true); startPolling(); return; }
+  portalReady = true;
   document.getElementById("searchInput").addEventListener("input", renderTable);
   document.querySelectorAll(".filter-tab").forEach(tab => {
     tab.addEventListener("click", () => {
@@ -380,9 +487,9 @@ function renderTable() {
   } else {
     body.innerHTML = list.map(v => `
       <tr class="visit-row" data-id="${v.id}">
-        <td><div class="visitor-name">${v.visitor_name}</div><div class="visitor-sub">${v.department}</div></td>
-        <td>${v.host}</td>
-        <td><span class="appt-tag ${v.appt_type}">${v.appt_type === "scheduled" ? "Scheduled" : "Walk-in"}</span></td>
+        <td><div class="visitor-name">${escapeHtml(v.visitor_name)}</div><div class="visitor-sub">${escapeHtml(v.department)}</div></td>
+        <td>${escapeHtml(v.host)}</td>
+        <td><span class="appt-tag ${v.appt_type === "scheduled" ? "scheduled" : "walkin"}">${v.appt_type === "scheduled" ? "Scheduled" : "Walk-in"}</span></td>
         <td>${formatTime(v.checkin)}</td>
         <td><span class="status-pill ${v.status}"><span class="dot"></span>${statusMeta[v.status]}</span></td>
       </tr>
