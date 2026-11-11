@@ -73,14 +73,10 @@ tbody tr:hover { background: var(--surface-hover); }
 .role-pill.security { background: #E8F1F2; color: #0F4C5C; } body.theme-dark .role-pill.security { background: #12262B; }
 .role-pill.frontdesk { background: var(--warn-bg); color: var(--warn); }
 .role-pill.admin { background: var(--accent-tint); color: var(--accent); }
-.status-pill.active { background: var(--success-bg); color: var(--success); }
-.status-pill.suspended { background: var(--danger-bg); color: var(--danger); }
 .status-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 .row-actions { display: flex; gap: 8px; justify-content: flex-end; }
 .icon-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 600; color: var(--accent); background: var(--accent-tint); border: none; padding: 7px 12px; border-radius: 7px; cursor: pointer; }
 .icon-btn:hover { filter: brightness(.96); } body.theme-dark .icon-btn:hover { filter: brightness(1.15); }
-.icon-btn.suspend { color: var(--danger); background: var(--danger-bg); }
-.icon-btn.activate { color: var(--success); background: var(--success-bg); }
 .btn-add { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: #fff; background: var(--accent); border: none; padding: 9px 14px; border-radius: 8px; cursor: pointer; white-space: nowrap; }
 .btn-add:hover { background: var(--accent-hover); }
 .btn-add svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
@@ -96,6 +92,21 @@ body.theme-dark .visit-status-pill.with-host, body.theme-dark .visit-status-pill
 .bar-track { flex: 1; background: var(--bg); border-radius: 100px; height: 8px; overflow: hidden; }
 .bar-fill { height: 100%; background: var(--accent); border-radius: 100px; }
 .bar-row .bar-num { width: 28px; text-align: right; font-size: 12px; font-weight: 700; color: var(--text-tertiary); flex-shrink: 0; }
+.charts-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 16px; }
+.chart-body { padding: 4px 18px 18px; }
+.donut-wrap { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.donut { width: 130px; height: 130px; border-radius: 50%; position: relative; flex-shrink: 0; }
+.donut::after { content: attr(data-total); position: absolute; inset: 24px; border-radius: 50%; background: var(--bg); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 800; font-size: 22px; color: var(--text-primary); }
+.legend { display: flex; flex-direction: column; gap: 7px; font-size: 12.5px; color: var(--text-secondary); min-width: 120px; flex: 1; }
+.legend div { display: flex; align-items: center; gap: 8px; }
+.legend i { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+.legend b { margin-left: auto; color: var(--text-primary); }
+.col-chart { display: flex; align-items: flex-end; gap: 10px; height: 150px; padding-top: 10px; }
+.col-chart .col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 5px; }
+.col-chart .col .v { font-size: 11px; font-weight: 700; color: var(--text-secondary); }
+.col-chart .col .b { width: 100%; max-width: 34px; background: var(--accent); border-radius: 6px 6px 0 0; min-height: 3px; }
+.col-chart .col .d { font-size: 11px; color: var(--text-tertiary); }
+@media (max-width: 1100px) { .charts-row { grid-template-columns: 1fr; } }
 .report-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
 .report-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; display: flex; align-items: flex-start; gap: 14px; }
 .report-card .r-icon { width: 38px; height: 38px; border-radius: 9px; background: var(--accent-tint); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -189,7 +200,7 @@ body.theme-dark {
   --success: #4ADE9A; --success-bg: #0E3A2E; --warn-bg: #3A2C12; --hold-bg: #17224F;
   --danger: #FF8F86; --danger-bg: rgba(255,110,100,.15);
   --glass: rgba(13,22,58,.58); --glass-edge: rgba(130,160,255,.20);
-  
+
 }
 .bg-fx { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none;
   background: radial-gradient(120% 80% at 50% -10%, #12246B 0%, transparent 60%), linear-gradient(180deg, #060D2A 0%, #040A1E 100%); }
@@ -311,6 +322,11 @@ body.theme-dark :is(.appt-tag.scheduled, .status-pill.approved, .role-pill.secur
 <div class="panel"><div class="panel-header"><div><h2>Staff Performance</h2><span class="sub">Visits handled this week, by host</span></div></div><div id="perfChart"></div></div>
 <div class="panel"><div class="panel-header"><div><h2>Recent Activity</h2><span class="sub">Latest system events</span></div></div><div id="activityFeed" style="padding-bottom:16px;"></div></div>
 </div>
+<div class="charts-row">
+<div class="panel"><div class="panel-header"><div><h2>Visit Status</h2><span class="sub">All visits by current status</span></div></div><div class="chart-body" id="chartStatus"></div></div>
+<div class="panel"><div class="panel-header"><div><h2>Visits per Day</h2><span class="sub">Last 7 days</span></div></div><div class="chart-body" id="chartDaily"></div></div>
+<div class="panel"><div class="panel-header"><div><h2>Visits by Department</h2><span class="sub">All time</span></div></div><div class="chart-body" id="chartDept"></div></div>
+</div>
 </div>
 <!-- ===== USERS & ROLES ===== -->
 <div class="view" id="view-users">
@@ -320,7 +336,7 @@ body.theme-dark :is(.appt-tag.scheduled, .status-pill.approved, .role-pill.secur
 <div class="panel-header"><div><h2>Staff Roster</h2><span class="sub" id="usersCount">0 members</span></div>
 <button class="btn-add" id="addUserBtn"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add Staff Member</button>
 </div>
-<table><thead><tr><th>Name</th><th>Role</th><th>Status</th><th></th></tr></thead><tbody id="usersTableBody"></tbody></table>
+<table><thead><tr><th>Name</th><th>Role</th></tr></thead><tbody id="usersTableBody"></tbody></table>
 </div>
 </div>
 <!-- ===== VISITOR LOGS ===== -->
@@ -521,7 +537,7 @@ function initPortal() {
   document.getElementById("cancelPasscode").addEventListener("click", () => document.getElementById("passcodeModalOverlay").classList.remove("show"));
   document.getElementById("savePasscode").addEventListener("click", savePasscodeChange);
   document.querySelectorAll("[data-report]").forEach(btn => {
-    btn.addEventListener("click", () => showToast(`${btn.dataset.report} exported as ${btn.dataset.format} (demo only — real export not wired up yet).`));
+    btn.addEventListener("click", () => exportReport(btn.dataset.report, btn.dataset.format, btn));
   });
 }
 
@@ -547,6 +563,7 @@ async function loadDashboard() {
       </div>
     `).join("") || `<div style="font-size:13px;color:var(--text-tertiary);">No activity yet.</div>`;
   } catch (e) { showToast(e.message, true); }
+  loadCharts();
 }
 
 // ===== Users & Roles (roster) =====
@@ -556,23 +573,13 @@ async function loadRoster() {
     const roster = await api("/admin/roster");
     document.getElementById("usersCount").textContent = `${roster.length} member${roster.length !== 1 ? "s" : ""}`;
     const body = document.getElementById("usersTableBody");
-    if (roster.length === 0) { body.innerHTML = `<tr class="empty-row"><td colspan="4">No staff added yet.</td></tr>`; return; }
+    if (roster.length === 0) { body.innerHTML = `<tr class="empty-row"><td colspan="2">No staff added yet.</td></tr>`; return; }
     body.innerHTML = roster.map(u => `
       <tr>
         <td><div class="name-cell">${escapeHtml(u.name)}</div><div class="sub-cell">ID #${String(u.id).padStart(3,"0")}</div></td>
         <td><span class="role-pill ${u.role}">${roleLabels[u.role]}</span></td>
-        <td><span class="status-pill ${u.status}"><span class="dot"></span>${u.status === "active" ? "Active" : "Suspended"}</span></td>
-        <td><div class="row-actions"><button class="icon-btn ${u.status === "active" ? "suspend" : "activate"}" data-toggle="${u.id}">${u.status === "active" ? "Suspend" : "Activate"}</button></div></td>
       </tr>
     `).join("");
-    document.querySelectorAll("[data-toggle]").forEach(btn => btn.addEventListener("click", () => toggleRoster(Number(btn.dataset.toggle))));
-  } catch (e) { showToast(e.message, true); }
-}
-async function toggleRoster(id) {
-  try {
-    const updated = await api(`/admin/roster/${id}`, { method: "PATCH" });
-    loadRoster();
-    showToast(`${updated.name}'s account was ${updated.status === "active" ? "reactivated" : "suspended"}.`);
   } catch (e) { showToast(e.message, true); }
 }
 async function saveUser() {
@@ -586,6 +593,116 @@ async function saveUser() {
     loadRoster();
     showToast(`${name} was added to the roster.`);
   } catch (e) { showToast(e.message, true); }
+}
+
+// ===== Dashboard charts (pure HTML/CSS) =====
+const CHART_COLORS = ["#6B4C6E", "#1E7B4D", "#B8792A", "#3B82A0", "#B3261E", "#8A93A3", "#9B6BA0", "#5C9E6E"];
+const STATUS_COLORS = { "checked-out": "#1E7B4D", "with-host": "#6B4C6E", approved: "#3B82A0", pending: "#B8792A", hold: "#9B8A5C", rejected: "#B3261E" };
+function donutChart(el, items) {
+  const total = items.reduce((a, i) => a + i.value, 0);
+  if (!total) { el.innerHTML = `<div style="font-size:13px;color:var(--text-tertiary);">No visit data yet.</div>`; return; }
+  let acc = 0;
+  const stops = items.map(i => { const a = acc / total * 100; acc += i.value; return `${i.color} ${a}% ${acc / total * 100}%`; }).join(", ");
+  el.innerHTML = `<div class="donut-wrap"><div class="donut" data-total="${total}" style="background:conic-gradient(${stops});"></div><div class="legend">${items.map(i => `<div><i style="background:${i.color}"></i>${escapeHtml(i.label)}<b>${i.value}</b></div>`).join("")}</div></div>`;
+}
+async function loadCharts() {
+  try {
+    const visits = await fetchAllVisits();
+    const st = {}; visits.forEach(v => st[v.status] = (st[v.status] || 0) + 1);
+    donutChart(document.getElementById("chartStatus"), Object.entries(st).sort((a, b) => b[1] - a[1]).map(([k, n], i) => ({ label: fmtStatus(k), value: n, color: STATUS_COLORS[k] || CHART_COLORS[i % CHART_COLORS.length] })));
+    const days = [];
+    for (let i = 6; i >= 0; i--) { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - i); days.push({ d, n: 0 }); }
+    visits.forEach(v => { const t = new Date(v.checkin); t.setHours(0, 0, 0, 0); const x = days.find(y => y.d.getTime() === t.getTime()); if (x) x.n++; });
+    const max = Math.max(1, ...days.map(x => x.n));
+    document.getElementById("chartDaily").innerHTML = `<div class="col-chart">${days.map(x => `<div class="col"><div class="v">${x.n}</div><div class="b" style="height:${(x.n / max * 100).toFixed(0)}%"></div><div class="d">${x.d.toLocaleDateString("en-GB", { weekday: "short" })}</div></div>`).join("")}</div>`;
+    const dp = {}; visits.forEach(v => dp[v.department] = (dp[v.department] || 0) + 1);
+    let list = Object.entries(dp).sort((a, b) => b[1] - a[1]);
+    if (list.length > 6) { const rest = list.slice(5).reduce((a, [, n]) => a + n, 0); list = list.slice(0, 5).concat([["Other", rest]]); }
+    donutChart(document.getElementById("chartDept"), list.map(([k, n], i) => ({ label: k, value: n, color: CHART_COLORS[i % CHART_COLORS.length] })));
+  } catch (e) { showToast(e.message, true); }
+}
+
+// ===== Report export (real data) =====
+async function fetchAllVisits() {
+  let all = [], offset = 0, total = Infinity;
+  while (offset < total) {
+    const data = await api(`/admin/visits?search=&limit=100&offset=${offset}`);
+    total = data.total;
+    if (!data.rows.length) break;
+    all = all.concat(data.rows);
+    offset += data.rows.length;
+  }
+  return all;
+}
+const fmtDT = d => d ? new Date(d).toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—";
+const fmtStatus = s => String(s || "").replace("-", " ");
+const fmtMins = m => m == null ? "—" : (m >= 60 ? `${Math.floor(m / 60)}h ${Math.round(m % 60)}m` : `${Math.round(m)}m`);
+
+function buildReport(name, visits) {
+  if (name === "Daily Visitor Log") {
+    const t = new Date(); t.setHours(0, 0, 0, 0);
+    const rows = visits.filter(v => new Date(v.checkin) >= t).sort((a, b) => new Date(a.checkin) - new Date(b.checkin));
+    return { subtitle: `Visits for ${new Date().toLocaleDateString("en-GB", { dateStyle: "full" })}`,
+      head: ["Visitor", "Department", "Host", "Purpose", "Check-in", "Check-out", "Status"],
+      rows: rows.map(v => [v.visitor_name, v.department, v.host, v.purpose, fmtDT(v.checkin), fmtDT(v.checkout), fmtStatus(v.status)]) };
+  }
+  if (name === "Monthly Visitor Count") {
+    const m = {};
+    visits.forEach(v => { const d = new Date(v.checkin); const k = d.getFullYear() * 100 + d.getMonth(); (m[k] = m[k] || { label: d.toLocaleString("en-GB", { month: "long", year: "numeric" }), n: 0 }).n++; });
+    const keys = Object.keys(m).sort((a, b) => b - a);
+    return { subtitle: "Total visits per month, all time",
+      head: ["Month", "Total Visits"], rows: keys.map(k => [m[k].label, m[k].n]) };
+  }
+  if (name === "Staff Visit Frequency") {
+    const h = {};
+    visits.forEach(v => { const x = h[v.host] = h[v.host] || { n: 0, dept: v.department }; x.n++; });
+    return { subtitle: "Visitors received per host, all time",
+      head: ["Host", "Department", "Visits"], rows: Object.entries(h).sort((a, b) => b[1].n - a[1].n).map(([k, x]) => [k, x.dept, x.n]) };
+  }
+  // Security & Front Desk Performance
+  const by = st => visits.filter(v => v.status === st).length;
+  const durs = visits.filter(v => v.checkout && v.checkin).map(v => (new Date(v.checkout) - new Date(v.checkin)) / 60000).filter(x => x >= 0);
+  const avg = durs.length ? durs.reduce((a, b) => a + b, 0) / durs.length : null;
+  const dept = {};
+  visits.forEach(v => { const x = dept[v.department] = dept[v.department] || { n: 0, d: [] }; x.n++; if (v.checkout) { const m = (new Date(v.checkout) - new Date(v.checkin)) / 60000; if (m >= 0) x.d.push(m); } });
+  const rows = [["Total visits", visits.length, ""], ["Checked out", by("checked-out"), ""], ["Approved / with host", by("approved") + by("with-host"), ""],
+    ["Pending / on hold", by("pending") + by("hold"), ""], ["Rejected", by("rejected"), ""], ["Average visit duration", fmtMins(avg), "check-in to check-out"]];
+  Object.entries(dept).sort((a, b) => b[1].n - a[1].n).forEach(([k, x]) => rows.push([`Dept: ${k}`, x.n, x.d.length ? `avg ${fmtMins(x.d.reduce((a, b) => a + b, 0) / x.d.length)}` : "—"]));
+  return { subtitle: "Visit outcomes and time on site, all time", head: ["Measure", "Value", "Note"], rows };
+}
+
+function downloadBlob(content, mime, filename) {
+  const url = URL.createObjectURL(new Blob([content], { type: mime }));
+  const a = document.createElement("a"); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+function printPdf(title, r) {
+  const f = document.createElement("iframe");
+  f.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;";
+  document.body.appendChild(f);
+  const th = r.head.map(h => `<th>${escapeHtml(h)}</th>`).join("");
+  const tr = r.rows.map(row => `<tr>${row.map(c => `<td>${escapeHtml(String(c ?? ""))}</td>`).join("")}</tr>`).join("") || `<tr><td colspan="${r.head.length}">No records.</td></tr>`;
+  f.contentDocument.open();
+  f.contentDocument.write(`<html><head><title>${escapeHtml(title)}</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#111}h1{font-size:18px;margin:0}p{font-size:12px;color:#555;margin:4px 0 16px}table{width:100%;border-collapse:collapse;font-size:11px}th,td{border:1px solid #ccc;padding:6px 8px;text-align:left}th{background:#eee}</style></head><body><h1>Rex Insurance Ltd — ${escapeHtml(title)}</h1><p>${escapeHtml(r.subtitle)} · Generated ${new Date().toLocaleString("en-GB")}</p><table><thead><tr>${th}</tr></thead><tbody>${tr}</tbody></table></body></html>`);
+  f.contentDocument.close();
+  setTimeout(() => { f.contentWindow.focus(); f.contentWindow.print(); setTimeout(() => f.remove(), 1500); }, 300);
+}
+async function exportReport(name, format, btn) {
+  const label = btn.textContent; btn.disabled = true; btn.textContent = "Preparing…";
+  try {
+    const r = buildReport(name, await fetchAllVisits());
+    const stamp = new Date().toISOString().slice(0, 10);
+    const base = `${name.replace(/[^A-Za-z0-9]+/g, "_")}_${stamp}`;
+    if (format === "PDF") { printPdf(name, r); showToast(`${name}: choose "Save as PDF" in the print window.`); }
+    else {
+      const th = r.head.map(h => `<th>${escapeHtml(h)}</th>`).join("");
+      const tr = r.rows.map(row => `<tr>${row.map(c => `<td>${escapeHtml(String(c ?? ""))}</td>`).join("")}</tr>`).join("");
+      const html = `<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body><table border="1"><thead><tr>${th}</tr></thead><tbody>${tr}</tbody></table></body></html>`;
+      downloadBlob("\ufeff" + html, "application/vnd.ms-excel", `${base}.xls`);
+      showToast(`${name} exported (${r.rows.length} row${r.rows.length !== 1 ? "s" : ""}).`);
+    }
+  } catch (e) { showToast(e.message, true); }
+  finally { btn.disabled = false; btn.textContent = label; }
 }
 
 // ===== Visitor Logs (batched) =====
