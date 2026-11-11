@@ -243,6 +243,18 @@
     #clock { display: none; }
     .top-left .titles .portal { white-space: nowrap; }
   }
+
+/* ===== Portal switcher (links to the other two portals) ===== */
+.portal-switch { display: flex; align-items: center; gap: 6px; }
+.portal-switch .ps-label { font-size: 11.5px; color: var(--text-tertiary); margin-right: 2px; }
+.portal-switch a { font-size: 12.5px; font-weight: 600; color: var(--text-secondary); text-decoration: none; padding: 6px 12px; border: 1px solid var(--border); border-radius: 100px; background: var(--surface); white-space: nowrap; transition: color .15s, border-color .15s, background-color .15s; }
+.portal-switch a:hover, .portal-switch a:focus-visible { color: var(--text-primary); border-color: var(--accent); background: var(--accent-tint); }
+.login-card .portal-switch { flex-wrap: wrap; justify-content: center; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border); }
+.login-card .portal-switch .ps-label { width: 100%; text-align: center; margin: 0 0 2px; }
+@media (max-width: 720px) {
+  .top-bar { flex-wrap: wrap; }
+  .top-bar .portal-switch { order: 3; width: 100%; justify-content: center; }
+}
 </style>
 </head>
 <body class="theme-dark">
@@ -271,7 +283,7 @@
         </div>
       </div>
       <button class="btn-primary" id="loginBtn" style="width:100%;">Log In</button>
-      <a class="switch-portal" href="index.html">Not this portal? Choose another</a>
+      <nav class="portal-switch" aria-label="Switch portal"><span class="ps-label">Switch portal</span><a href="./frontdesk-portal.html">Front Desk Portal</a><a href="./admin-portal.html">Admin Portal</a></nav>
     </div>
   </div>
 
@@ -289,6 +301,7 @@
           <div class="portal">Security Portal</div>
         </div>
       </div>
+      <nav class="portal-switch" aria-label="Switch portal"><span class="ps-label">Switch to</span><a href="./frontdesk-portal.html">Front Desk</a><a href="./admin-portal.html">Admin</a></nav>
       <div class="top-right">
         <span class="user-chip" id="userChip"></span>
         <div id="clock"></div>
@@ -605,7 +618,6 @@
     document.getElementById("btnScheduled").addEventListener("click", () => setAppt("scheduled"));
     document.getElementById("saveVisit").addEventListener("click", submitVisit);
 
-    initGuide();
   }
 
   let apptType = "walkin";
@@ -814,47 +826,55 @@
   // ============================================================
   // AI Guide widget
   // ============================================================
+  let guideReady = false, guideBusy = false;
   function initGuide() {
-    const fab = document.getElementById("guideFab");
-    const panel = document.getElementById("guidePanel");
-    fab.addEventListener("click", () => panel.classList.toggle("show"));
-    document.getElementById("closeGuide").addEventListener("click", () => panel.classList.remove("show"));
-
-    document.querySelectorAll("#guideQuick button").forEach(btn => {
-      btn.addEventListener("click", () => askGuide(btn.dataset.q));
+    if (guideReady) return;
+    guideReady = true;
+    const fab = document.getElementById("guideFab"), panel = document.getElementById("guidePanel");
+    fab.addEventListener("click", () => {
+      panel.classList.toggle("show");
+      if (panel.classList.contains("show")) document.getElementById("guideInput").focus();
     });
-
+    document.getElementById("closeGuide").addEventListener("click", () => panel.classList.remove("show"));
+    document.querySelectorAll("#guideQuick button").forEach(btn => btn.addEventListener("click", () => askGuide(btn.dataset.q)));
     document.getElementById("guideSend").addEventListener("click", sendGuideInput);
     document.getElementById("guideInput").addEventListener("keydown", (e) => { if (e.key === "Enter") sendGuideInput(); });
   }
-
   function sendGuideInput() {
     const input = document.getElementById("guideInput");
     const q = input.value.trim();
-    if (!q) return;
+    if (!q || guideBusy) return;
     input.value = "";
     askGuide(q);
   }
-
+  // Escapes first, then turns **bold** and line breaks into safe HTML
+  function formatGuideAnswer(text) {
+    return escapeHtml(text).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\n/g, "<br>");
+  }
   async function askGuide(question) {
+    if (guideBusy) return;
+    guideBusy = true;
     const body = document.getElementById("guideBody");
     body.insertAdjacentHTML("beforeend", `<div class="guide-msg user">${escapeHtml(question)}</div>`);
     body.insertAdjacentHTML("beforeend", `<div class="guide-msg bot guide-typing" id="guideTyping">Thinking...</div>`);
     body.scrollTop = body.scrollHeight;
-
     try {
       const res = await fetch(`${API_BASE}/ai/ask`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ portal: PORTAL, question })
       });
-      const data = await res.json();
-      document.getElementById("guideTyping").remove();
-      if (!res.ok) throw new Error(data.error || "Couldn't get an answer.");
-      body.insertAdjacentHTML("beforeend", `<div class="guide-msg bot">${escapeHtml(data.answer)}</div>`);
+      const data = await res.json().catch(() => ({}));
+      const typing = document.getElementById("guideTyping"); if (typing) typing.remove();
+      if (!res.ok) throw new Error(data.error || `The guide returned an error (${res.status}).`);
+      if (!data.answer) throw new Error("The guide sent back an empty answer.");
+      body.insertAdjacentHTML("beforeend", `<div class="guide-msg bot">${formatGuideAnswer(data.answer)}</div>`);
     } catch (e) {
-      document.getElementById("guideTyping").remove();
-      body.insertAdjacentHTML("beforeend", `<div class="guide-msg bot">Sorry, I couldn't reach the guide right now. (${escapeHtml(e.message)})</div>`);
+      const typing = document.getElementById("guideTyping"); if (typing) typing.remove();
+      const msg = e instanceof TypeError ? "Can't reach the server. Check your connection and try again." : e.message;
+      body.insertAdjacentHTML("beforeend", `<div class="guide-msg bot">Sorry, I couldn't get an answer. (${escapeHtml(msg)})</div>`);
+    } finally {
+      guideBusy = false;
     }
     body.scrollTop = body.scrollHeight;
   }
@@ -864,6 +884,8 @@
     d.textContent = str;
     return d.innerHTML;
   }
+
+initGuide();
 </script>
 
 </body>
