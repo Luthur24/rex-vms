@@ -279,9 +279,63 @@ body.theme-dark .card-icon path[fill] {
 .theme-toggle .icon-moon { display: none; }
 body.theme-dark .theme-toggle .icon-sun { display: none; }
 body.theme-dark .theme-toggle .icon-moon { display: block; }
+
+/* ===== Floating bubbles background ===== */
+.app { position: relative; z-index: 1; }
+.bubbles { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; --mx: 0; --my: 0; }
+body {
+  --c1: 45,170,200; --c2: 230,160,70; --c3: 170,110,200; --c4: 70,130,255;
+  --hl: .38; --fill: .10; --rim: .30; --edge: .42; --glow: .30;
+}
+body:not(.theme-dark) {
+  --c1: 14,150,190; --c2: 222,140,40; --c3: 140,90,180; --c4: 30,110,240;
+  --hl: .85; --fill: .10; --rim: .24; --edge: .50; --glow: .30;
+}
+.bubble-wrap {
+  position: absolute;
+  left: var(--x);
+  bottom: calc(var(--size) * -1.1);
+  width: var(--size);
+  height: var(--size);
+  transform: translate3d(calc(var(--mx) * var(--depth) * 1px), calc(var(--my) * var(--depth) * 1px), 0);
+  transition: transform 0.9s cubic-bezier(.2, .7, .2, 1);
+}
+.bubble {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  will-change: transform, translate;
+  background:
+    radial-gradient(circle at 30% 24%, rgba(255,255,255,var(--hl)) 0, rgba(255,255,255,0) 10%),
+    radial-gradient(circle at 72% 80%, rgba(var(--rgb), calc(var(--fill) * 1.4)) 0, rgba(var(--rgb), 0) 42%),
+    radial-gradient(circle at 50% 50%, rgba(var(--rgb), 0) 54%, rgba(var(--rgb), var(--rim)) 100%);
+  border: 1.5px solid rgba(var(--rgb), var(--edge));
+  box-shadow:
+    inset 0 0 calc(var(--size) * .14) rgba(var(--rgb), var(--glow)),
+    0 0 calc(var(--size) * .2) rgba(var(--rgb), calc(var(--glow) * .55));
+  animation:
+    bubble-rise var(--dur) linear var(--delay) infinite,
+    bubble-sway var(--sway) ease-in-out var(--delay) infinite alternate;
+}
+.bubble.c1 { --rgb: var(--c1); } .bubble.c2 { --rgb: var(--c2); }
+.bubble.c3 { --rgb: var(--c3); } .bubble.c4 { --rgb: var(--c4); }
+@keyframes bubble-rise {
+  from { transform: translate3d(0, 0, 0) scale(.96); }
+  50%  { transform: translate3d(0, calc(var(--rise) * -.5), 0) scale(1.03); }
+  to   { transform: translate3d(0, calc(var(--rise) * -1), 0) scale(.96); }
+}
+@keyframes bubble-sway {
+  from { translate: calc(var(--drift) * -1) 0; }
+  to   { translate: var(--drift) 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bubble { animation: none !important; }
+  .bubble-wrap { bottom: auto; top: var(--y); transition: none; }
+}
 </style>
 </head>
 <body class="theme-dark">
+<div class="bubbles" id="bubbles" aria-hidden="true"></div>
 <div class="app">
 <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark theme">
 <svg class="icon-sun" viewBox="0 0 24 24">
@@ -377,6 +431,46 @@ document.querySelectorAll('.portal-card').forEach(function (card) {
     card.classList.add('shake');
   });
 });
+
+// ===== Floating bubbles =====
+(function () {
+  const host = document.getElementById('bubbles');
+  if (!host) return;
+  const COUNT = window.innerWidth < 700 ? 9 : 15;
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const big = window.innerWidth < 700 ? [130, 280] : [170, 460];
+  const vh = window.innerHeight;
+  for (let i = 0; i < COUNT; i++) {
+    const size = Math.round(rand(big[0], big[1]));
+    const dur = rand(55, 110);
+    const wrap = document.createElement('div');
+    wrap.className = 'bubble-wrap';
+    wrap.style.setProperty('--size', size + 'px');
+    wrap.style.setProperty('--x', ((i + rand(0, 0.8)) / COUNT * 100 - 6).toFixed(1) + '%');
+    wrap.style.setProperty('--y', rand(0, 80).toFixed(0) + '%');
+    wrap.style.setProperty('--depth', (size / 460 * 80).toFixed(1));
+    const b = document.createElement('div');
+    b.className = 'bubble c' + (1 + (i % 4));
+    b.style.setProperty('--dur', dur.toFixed(1) + 's');
+    b.style.setProperty('--delay', (-rand(0, dur)).toFixed(1) + 's');
+    b.style.setProperty('--sway', rand(9, 18).toFixed(1) + 's');
+    b.style.setProperty('--drift', Math.round(rand(14, 46)) + 'px');
+    b.style.setProperty('--rise', Math.round(vh + size * 2.3) + 'px');
+    wrap.appendChild(b);
+    host.appendChild(wrap);
+  }
+  // gentle parallax: bubbles drift slightly against the pointer
+  let ticking = false;
+  window.addEventListener('pointermove', function (e) {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(function () {
+      host.style.setProperty('--mx', ((e.clientX / window.innerWidth - 0.5) * -1).toFixed(3));
+      host.style.setProperty('--my', ((e.clientY / window.innerHeight - 0.5) * -1).toFixed(3));
+      ticking = false;
+    });
+  }, { passive: true });
+})();
 </script>
 </body>
 </html>
